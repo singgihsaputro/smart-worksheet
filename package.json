@@ -1,0 +1,15 @@
+{
+  "name": "smart-worksheet",
+  "private": true,
+  "type": "module",
+  "description": "Smart Worksheet by childplay — playful learning sheets for kids, in the browser.",
+  "scripts": {
+    "dev": "node --env-file-if-exists=.env.local dev.mjs",
+    "test": "node --test test/*.test.mjs"
+  },
+  "dependencies": {
+    "@libsql/client": "^0.18.0",
+    "jose": "^6.2.12"
+  },
+  "engines": { "node": ">=20" }
+}
