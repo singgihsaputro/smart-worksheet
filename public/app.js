@@ -144,6 +144,29 @@ function awaitHandoff() {
 }
 document.addEventListener('visibilitychange', () => { if (!document.hidden) checkHandoff() })
 
+/** Asks once more, then deletes the account and all its data (see /privacy). */
+function deleteAccount() {
+  sheetDialog(h('div', { class: 'big-emoji' }, '🗑️'), h('h2', {}, 'Hapus akun?'),
+    h('p', {}, `Akun ${user.email} dan semua bintangnya akan dihapus permanen dari Smart Worksheet. Ini tidak bisa dibatalkan.`),
+    h('button', {
+      class: 'btn danger',
+      async onclick(e) {
+        e.currentTarget.disabled = true
+        try {
+          await api('DELETE', '/api/me')
+          store.set(`stars:${owner}`, null)
+          user = null
+          store.set('account', null)
+          useAccount(null)
+          sheetDialog(h('div', { class: 'big-emoji' }, '👋'), h('h2', {}, 'Akun sudah dihapus'), h('p', {}, 'Semua data akun ini sudah dihapus.'))
+          route()
+        } catch {
+          sheetDialog(h('p', {}, 'Gagal menghapus akun. Coba lagi nanti.'))
+        }
+      },
+    }, 'Ya, hapus akun'))
+}
+
 async function signOut() {
   try { await api('DELETE', '/api/auth') } catch { /* the cookie expires on its own */ }
   window.google?.accounts.id.disableAutoSelect()
@@ -168,10 +191,11 @@ function accountDialog() {
   sheetDialog(user
     ? [h('div', { class: 'big-emoji' }, '🙌'), h('h2', {}, `Halo, ${user.name ?? 'teman'}!`),
        h('p', {}, `Masuk sebagai ${user.email}. Bintang tersimpan di akunmu, bisa dilanjutkan di perangkat mana pun.`),
-       h('button', { class: 'btn ghost', onclick: signOut }, 'Keluar')]
+       h('button', { class: 'btn ghost', onclick: signOut }, 'Keluar'),
+       h('button', { class: 'link-btn', onclick: deleteAccount }, 'Hapus akun & datanya')]
     : [h('div', { class: 'big-emoji' }, '⭐'), h('h2', {}, 'Simpan bintangmu'),
        h('p', {}, 'Masuk dengan Google supaya bintang tersimpan dan bisa dilanjutkan di HP, tablet, atau laptop lain. Semua lembar kerja tetap bisa dimainkan tanpa masuk.'),
-       googleButton(), h('p', { class: 'note' }, 'Minta orang tua untuk masuk ya.')])
+       googleButton(), h('p', { class: 'note' }, 'Minta orang tua untuk masuk ya. ', h('a', { href: '/privacy' }, 'Kebijakan Privasi'))])
 }
 
 // ── Screens ─────────────────────────────────────────────────────────────────

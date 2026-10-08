@@ -66,3 +66,19 @@ test('iPhone home-screen app: sign in in Safari, pick the session up with the co
   assert.equal((await (await me.GET(req('GET', null, cookieOf(res)))).json()).user.email, 'ios@example.com')
   assert.equal((await (await pick(code)).json()).user, null) // single use
 })
+
+test('a parent can delete the account and all its data', async () => {
+  const cookie = cookieOf(await auth.POST(req('POST', { credential: await idToken({ email: 'leaving@example.com' }, 'google-leaving') })))
+  await progress.PUT(req('PUT', { stars: { memory: 3 } }, cookie))
+  await play.POST(req('POST', { sheet: 'memory', stars: 3, mistakes: 0 }, cookie))
+  assert.equal((await me.DELETE(req('DELETE'))).status, 401)
+  const res = await me.DELETE(req('DELETE', null, cookie))
+  assert.match(res.headers.get('set-cookie'), /Max-Age=0/)
+  const left = await db.batch([
+    "SELECT COUNT(*) AS n FROM users WHERE email = 'leaving@example.com'",
+    "SELECT COUNT(*) AS n FROM stars WHERE user_id = 'google-leaving'",
+    "SELECT COUNT(*) AS n FROM plays WHERE user_id = 'google-leaving'",
+  ])
+  assert.deepEqual(left.map(r => Number(r.rows[0].n)), [0, 0, 0])
+  assert.equal((await (await me.GET(req('GET', null, cookie))).json()).user, null)
+})

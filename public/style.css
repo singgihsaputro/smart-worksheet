@@ -208,6 +208,12 @@ main { max-width: 980px; margin: 0 auto; padding: max(12px, env(safe-area-inset-
 .confetti i:nth-child(4n) { background: var(--teal); }
 @keyframes fall { to { transform: translateY(460px) rotate(540deg); opacity: 0; } }
 
+.legal-links { text-align: center; font-size: 13px; font-weight: 800; color: var(--muted); padding: 4px 16px max(18px, env(safe-area-inset-bottom)); }
+.legal-links a { color: var(--teal-lo); text-decoration: underline; }
+.btn.danger { background: var(--coral); box-shadow: 0 4px 0 #C25A44; }
+.link-btn { border: 0; background: none; color: var(--muted); text-decoration: underline; font-weight: 800; font-size: 14px; padding: 6px; }
+.note a { color: var(--teal-lo); text-decoration: underline; }
+
 /* Dialog */
 dialog.sheet { border: 0; border-radius: 28px; padding: 0; width: min(92vw, 420px); box-shadow: 0 20px 60px rgba(36,52,71,.25); color: var(--navy); }
 dialog.sheet::backdrop { background: rgba(36, 52, 71, .35); }
