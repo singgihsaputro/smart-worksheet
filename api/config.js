@@ -1,6 +1,5 @@
 // GET: the public settings the page needs. The OAuth client id is not a secret.
-import { json } from './_lib.js'
-
+// No database here, so it answers even before Turso is set up.
 export function GET() {
-  return json({ googleClientId: process.env.GOOGLE_CLIENT_ID ?? null })
+  return Response.json({ googleClientId: process.env.GOOGLE_CLIENT_ID ?? null })
 }
