@@ -22,6 +22,7 @@ export async function DELETE(request) {
     { sql: 'DELETE FROM stars WHERE user_id = ?', args: [id] },
     { sql: 'DELETE FROM plays WHERE user_id = ?', args: [id] },
     { sql: 'DELETE FROM events WHERE user_id = ?', args: [id] },
+    { sql: 'DELETE FROM ratings WHERE user_id = ?', args: [id] },
     { sql: 'DELETE FROM handoffs WHERE user_id = ?', args: [id] },
     { sql: 'DELETE FROM users WHERE id = ?', args: [id] },
   ], 'write')

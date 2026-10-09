@@ -32,6 +32,10 @@ export function ready() {
       id INTEGER PRIMARY KEY AUTOINCREMENT, user_id TEXT, device TEXT, sheet TEXT NOT NULL,
       stars INTEGER NOT NULL, mistakes INTEGER NOT NULL, created_at INTEGER NOT NULL)`,
     'CREATE INDEX IF NOT EXISTS plays_time ON plays (created_at)',
+    // Parents' reviews from the Dukung tab.
+    `CREATE TABLE IF NOT EXISTS ratings (
+      id INTEGER PRIMARY KEY AUTOINCREMENT, user_id TEXT, stars INTEGER NOT NULL CHECK (stars BETWEEN 1 AND 5),
+      text TEXT, created_at INTEGER NOT NULL)`,
     // One-time codes for signing the iPhone home-screen app in via Safari (see auth.js).
     'CREATE TABLE IF NOT EXISTS handoffs (id TEXT PRIMARY KEY, user_id TEXT NOT NULL, created_at INTEGER NOT NULL)',
   ], 'write')

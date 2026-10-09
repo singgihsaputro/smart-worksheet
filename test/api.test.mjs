@@ -16,6 +16,7 @@ const play = await import('../api/play.js')
 const handoff = await import('../api/handoff.js')
 const analytics = await import('../api/analytics.js')
 const event = await import('../api/event.js')
+const rating = await import('../api/rating.js')
 
 const { publicKey, privateKey } = await generateKeyPair('RS256')
 google.keys = createLocalJWKSet({ keys: [{ ...(await exportJWK(publicKey)), kid: 'k', alg: 'RS256' }] })
@@ -73,6 +74,7 @@ test('a parent can delete the account and all its data', async () => {
   const cookie = cookieOf(await auth.POST(req('POST', { credential: await idToken({ email: 'leaving@example.com' }, 'google-leaving') })))
   await progress.PUT(req('PUT', { stars: { memory: 3 } }, cookie))
   await play.POST(req('POST', { sheet: 'memory', stars: 3, mistakes: 0 }, cookie))
+  await rating.POST(req('POST', { stars: 5, text: 'bagus' }, cookie))
   assert.equal((await me.DELETE(req('DELETE'))).status, 401)
   const res = await me.DELETE(req('DELETE', null, cookie))
   assert.match(res.headers.get('set-cookie'), /Max-Age=0/)
@@ -80,8 +82,9 @@ test('a parent can delete the account and all its data', async () => {
     "SELECT COUNT(*) AS n FROM users WHERE email = 'leaving@example.com'",
     "SELECT COUNT(*) AS n FROM stars WHERE user_id = 'google-leaving'",
     "SELECT COUNT(*) AS n FROM plays WHERE user_id = 'google-leaving'",
+    "SELECT COUNT(*) AS n FROM ratings WHERE user_id = 'google-leaving'",
   ])
-  assert.deepEqual(left.map(r => Number(r.rows[0].n)), [0, 0, 0])
+  assert.deepEqual(left.map(r => Number(r.rows[0].n)), [0, 0, 0, 0])
   assert.equal((await (await me.GET(req('GET', null, cookie))).json()).user, null)
 })
 
@@ -94,6 +97,8 @@ test('the dashboard answers only the owner', async () => {
   await play.POST(req('POST', { sheet: 'count', stars: 2, mistakes: 1, device: 'dash-device-1' }))
   assert.equal((await event.POST(req('POST', { type: 'donate_tap' }))).status, 200)
   assert.equal((await event.POST(req('POST', { type: 'anything' }))).status, 400)
+  assert.equal((await rating.POST(req('POST', { stars: 4, text: '  Anak suka puzzle  ' }))).status, 200)
+  assert.equal((await rating.POST(req('POST', { stars: 6 }))).status, 400)
   const res = await analytics.GET(req('GET', null, owner))
   assert.equal(res.status, 200)
   const data = await res.json()
@@ -102,4 +107,5 @@ test('the dashboard answers only the owner', async () => {
   assert.ok(data.logins.some(l => l.email === 'someone@example.com'))
   assert.ok(data.daily.length >= 1)
   assert.ok(data.totals.donate_taps >= 1 && data.taps.length >= 1)
+  assert.ok(data.ratings.some(r => r.stars === 4 && r.text === 'Anak suka puzzle'))
 })

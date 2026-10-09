@@ -11,7 +11,7 @@ export async function GET(request) {
   if (!(await isAdmin(id))) return json({ error: 'not an admin' }, { status: 403 })
 
   const now = Date.now(), week = now - 7 * DAY, month = now - 30 * DAY
-  const [totals, sheets, daily, users, logins, plays, taps] = await db.batch([
+  const [totals, sheets, daily, users, logins, plays, taps, ratings] = await db.batch([
     {
       sql: `SELECT
         (SELECT COUNT(*) FROM users) AS accounts,
@@ -21,7 +21,9 @@ export async function GET(request) {
         (SELECT COUNT(DISTINCT COALESCE(user_id, device)) FROM plays WHERE created_at >= ?) AS players_7d,
         (SELECT ROUND(AVG(stars), 1) FROM plays WHERE created_at >= ?) AS avg_stars_7d,
         (SELECT COUNT(*) FROM events WHERE type = 'donate_tap' AND created_at >= ?) AS donate_taps_7d,
-        (SELECT COUNT(*) FROM events WHERE type = 'donate_tap') AS donate_taps`,
+        (SELECT COUNT(*) FROM events WHERE type = 'donate_tap') AS donate_taps,
+        (SELECT COUNT(*) FROM ratings) AS ratings,
+        (SELECT ROUND(AVG(stars), 1) FROM ratings) AS rating_avg`,
       args: [week, week, week, week, week, week],
     },
     // Per worksheet, last 30 days (bounded, so the dashboard stays cheap as plays grow).
@@ -48,11 +50,13 @@ export async function GET(request) {
       ORDER BY p.created_at DESC LIMIT 300`,
     `SELECT e.created_at, u.email FROM events e LEFT JOIN users u ON u.id = e.user_id
       WHERE e.type = 'donate_tap' ORDER BY e.created_at DESC LIMIT 200`,
+    `SELECT r.stars, r.text, r.created_at, u.email FROM ratings r LEFT JOIN users u ON u.id = r.user_id
+      ORDER BY r.created_at DESC LIMIT 200`,
   ], 'read')
 
   const plain = rs => rs.rows.map(r => Object.fromEntries(rs.columns.map(c => [c, typeof r[c] === 'bigint' ? Number(r[c]) : r[c]])))
   return json({
     totals: plain(totals)[0], sheets: plain(sheets), daily: plain(daily),
-    users: plain(users), logins: plain(logins), plays: plain(plays), taps: plain(taps),
+    users: plain(users), logins: plain(logins), plays: plain(plays), taps: plain(taps), ratings: plain(ratings),
   })
 }

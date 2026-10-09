@@ -243,9 +243,45 @@ function showQris() {
     h('p', {}, 'Berapa pun sangat membantu. Terima kasih! 🙏'))
 }
 
+/** 1–5 stars and an optional note for the maker, sent to /api/rating. */
+function ratingForm() {
+  let chosen = 0
+  const stars = h('div', { class: 'rate-stars', role: 'group', 'aria-label': 'Nilai' }, [1, 2, 3, 4, 5].map(n =>
+    h('button', { class: 'rate-star', 'aria-label': `${n} bintang`, 'aria-pressed': 'false', onclick: () => pick(n) }, '★')))
+  const note = h('textarea', { rows: 4, maxlength: 1000, 'aria-label': 'Ulasan',
+    placeholder: 'Ceritakan pengalaman anak, atau lembar kerja apa yang ingin ditambah (opsional). Jangan tulis data pribadi ya.' })
+  const send = h('button', { class: 'btn', disabled: true, onclick: submit }, 'Kirim ulasan')
+  const status = h('p', { class: 'note', 'aria-live': 'polite' })
+  function pick(n) {
+    chosen = n
+    ;[...stars.children].forEach((b, i) => { b.classList.toggle('on', i < n); b.setAttribute('aria-pressed', String(i < n)) })
+    send.disabled = false
+  }
+  async function submit() {
+    send.disabled = true
+    try {
+      await api('POST', '/api/rating', { stars: chosen, text: note.value })
+      note.value = ''
+      // Only a happy parent hears about donating; a low rating just gets thanks.
+      status.textContent = chosen >= 4 ? 'Terima kasih! Kalau berkenan, dukung juga lewat QRIS di atas 💝' : 'Terima kasih! Masukan Ayah Bunda kami pakai untuk memperbaiki Smart Worksheet 🙏'
+    } catch {
+      status.textContent = 'Gagal mengirim. Periksa internet lalu coba lagi.'
+      send.disabled = false
+    }
+  }
+  return h('div', { class: 'rate' }, stars, note, send, status)
+}
+
 // ── Screens ─────────────────────────────────────────────────────────────────
 
 let leave = () => {}
+const $nav = document.body.appendChild(h('nav', { class: 'tabs' }))
+
+function tabs(active) {
+  return [['main', '#/', '🧩', 'Main'], ['dukung', '#/dukung', '💝', 'Dukung']]
+    .map(([id, href, icon, label]) => h('a', { class: `tab${id === active ? ' on' : ''}`, href, 'aria-current': id === active ? 'page' : null },
+      h('span', { class: 'tab-icon', 'aria-hidden': 'true' }, icon), h('span', {}, label)))
+}
 
 function topBar(back) {
   return h('header', { class: 'top' },
@@ -281,10 +317,24 @@ function homeScreen() {
           ? h('span', { class: 'card-stars', 'aria-label': `${best[sheet.id] ?? 0} dari 3 bintang` },
               [1, 2, 3].map(n => h('i', { class: n <= (best[sheet.id] ?? 0) ? 'on' : '' }, '★')))
           : h('span', { class: 'card-lock' }, user ? `Butuh ${group.need} ⭐` : 'Masuk untuk membuka')))))),
-    donateCard(),
     h('footer', { class: 'foot' },
       h('img', { src: 'brand/childplay-logo-horizontal.svg', alt: 'childplay — belajar sambil bermain' }),
       h('p', {}, 'Tanpa iklan. Suara hewan: rekaman CC0 dari BigSoundBank & Wikimedia Commons.'))))
+  return () => {}
+}
+
+/** For parents: a review and a donation. */
+function supportScreen() {
+  $app.replaceChildren(h('main', { class: 'home' },
+    topBar(false),
+    h('section', { class: 'hero' },
+      h('h1', {}, 'Untuk Ayah Bunda'),
+      h('p', {}, 'Beri ulasan, dan bantu kami terus membuat lembar kerja baru.')),
+    donateCard(),
+    h('section', { class: 'rate-card' },
+      h('h2', {}, '⭐ Beri ulasan'),
+      h('p', {}, 'Bagaimana pengalaman anak memakai Smart Worksheet? Semua masukan kami baca.'),
+      ratingForm())))
   return () => {}
 }
 
@@ -340,13 +390,15 @@ function route() {
     return lockedDialog(sheet)
   }
   if (sheet && dialog.open) dialog.close() // a lock message must not follow the child into a worksheet
-  leave = sheet ? sheetScreen(sheet) : page === 'signin' ? signinScreen(id) : homeScreen()
+  document.body.classList.toggle('has-nav', !sheet)
+  $nav.replaceChildren(...(sheet ? [] : tabs(page === 'dukung' ? 'dukung' : 'main')))
+  leave = sheet ? sheetScreen(sheet) : page === 'signin' ? signinScreen(id) : page === 'dukung' ? supportScreen() : homeScreen()
   window.scrollTo(0, 0)
 }
 addEventListener('hashchange', route)
 
 // Every button press gets a soft click (the sheets add their own sounds).
-document.addEventListener('click', e => { if (e.target.closest('button, a.btn, a.card')) sfx.tap() }, true)
+document.addEventListener('click', e => { if (e.target.closest('button, a.btn, a.card, a.tab')) sfx.tap() }, true)
 
 // ── Start ───────────────────────────────────────────────────────────────────
 
