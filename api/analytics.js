@@ -22,6 +22,7 @@ export async function GET(request) {
         (SELECT ROUND(AVG(stars), 1) FROM plays WHERE created_at >= ?) AS avg_stars_7d,
         (SELECT COUNT(*) FROM events WHERE type = 'donate_tap' AND created_at >= ?) AS donate_taps_7d,
         (SELECT COUNT(*) FROM events WHERE type = 'donate_tap') AS donate_taps,
+        (SELECT COUNT(*) FROM events WHERE type = 'shop_tap') AS shop_taps,
         (SELECT COUNT(*) FROM ratings) AS ratings,
         (SELECT ROUND(AVG(stars), 1) FROM ratings) AS rating_avg`,
       args: [week, week, week, week, week, week],

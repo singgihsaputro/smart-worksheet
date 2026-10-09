@@ -59,7 +59,7 @@ function render(data) {
       kpi(t.accounts, 'Akun'), kpi(t.new_7d, 'Akun baru (7 hari)'), kpi(t.signed_in_7d, 'Login (7 hari)'),
       kpi(t.plays_7d, 'Permainan (7 hari)'), kpi(t.players_7d, 'Pemain (7 hari)'), kpi(t.avg_stars_7d ?? '—', 'Rata ★ (7 hari)'),
       kpi(`${t.donate_taps_7d} / ${t.donate_taps}`, 'Ketuk dukungan (7 hari / total)'),
-      kpi(t.ratings ? `${t.rating_avg} ★` : '—', `Ulasan (${t.ratings})`)),
+      kpi(t.ratings ? `${t.rating_avg} ★` : '—', `Ulasan (${t.ratings})`), kpi(t.shop_taps, 'Ketuk link toko (total)')),
     h('section', { class: 'panel' }, h('h2', {}, '30 hari terakhir'), chart(data.daily)),
     h('div', { class: 'tabs-row', role: 'group' }, Object.entries(views).map(([id, [label]]) =>
       h('button', { class: `chip${id === view ? ' on' : ''}`, 'aria-pressed': String(id === view), onclick: () => { view = id; render(data) } }, label))),

@@ -1,8 +1,8 @@
-// POST { type: 'donate_tap' }: a tap on "Beri dukungan", counted for the owner's
+// POST { type: 'donate_tap' | 'shop_tap' }: a tap on "Beri dukungan" or the shop link, counted for the owner's
 // dashboard (with the account if signed in). Sent with navigator.sendBeacon.
 import { body, currentUser, db, json, ready } from './_lib.js'
 
-const TYPES = new Set(['donate_tap'])
+const TYPES = new Set(['donate_tap', 'shop_tap'])
 
 export async function POST(request) {
   const { type } = await body(request)

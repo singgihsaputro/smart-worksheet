@@ -392,6 +392,10 @@ function supportScreen() {
       h('p', {}, 'Beri ulasan, dan bantu kami terus membuat lembar kerja baru.')),
     donateCard(),
     h('section', { class: 'rate-card' },
+      h('h2', {}, '🖨️ Lembar kerja untuk dicetak'),
+      h('p', {}, 'Mau main tanpa layar? Ada buku mewarnai, busy book, dan gunting-tempel dari childplay untuk dicetak di rumah, beberapa gratis. Setiap pembelian ikut mendukung Smart Worksheet.'),
+      h('a', { class: 'btn ghost', href: 'https://lynk.id/singshop', target: '_blank', rel: 'noopener', onclick: () => beacon('/api/event', { type: 'shop_tap' }) }, 'Lihat di lynk.id ↗')),
+    h('section', { class: 'rate-card' },
       h('h2', {}, '⭐ Beri ulasan'),
       h('p', {}, 'Bagaimana pengalaman anak memakai Smart Worksheet? Semua masukan kami baca.'),
       ratingForm())))
