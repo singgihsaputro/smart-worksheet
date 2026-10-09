@@ -44,6 +44,8 @@ function render(data) {
     plays: ['Permainan terakhir', table([['Siapa'], ['Lembar'], ['★', true], ['Salah', true], ['Waktu', true]],
       data.plays.map(p => h('tr', {}, h('td', {}, who(p.email)), h('td', {}, sheetName(p.sheet)), h('td', { class: 'num' }, '★'.repeat(p.stars) || '—'),
         h('td', { class: 'num' }, p.mistakes), h('td', { class: 'num' }, when(p.created_at)))))],
+    taps: ['Ketuk "Beri dukungan"', table([['Siapa'], ['Waktu', true]],
+      data.taps.map(e => h('tr', {}, h('td', {}, who(e.email)), h('td', { class: 'num' }, when(e.created_at)))))],
   }
   const [title, body] = views[view]
   $dash.replaceChildren(
@@ -52,7 +54,8 @@ function render(data) {
       h('span', { class: 'note' }, `Diperbarui ${when(Date.now())}`)),
     h('div', { class: 'kpis' },
       kpi(t.accounts, 'Akun'), kpi(t.new_7d, 'Akun baru (7 hari)'), kpi(t.signed_in_7d, 'Login (7 hari)'),
-      kpi(t.plays_7d, 'Permainan (7 hari)'), kpi(t.players_7d, 'Pemain (7 hari)'), kpi(t.avg_stars_7d ?? '—', 'Rata ★ (7 hari)')),
+      kpi(t.plays_7d, 'Permainan (7 hari)'), kpi(t.players_7d, 'Pemain (7 hari)'), kpi(t.avg_stars_7d ?? '—', 'Rata ★ (7 hari)'),
+      kpi(`${t.donate_taps_7d} / ${t.donate_taps}`, 'Ketuk dukungan (7 hari / total)')),
     h('section', { class: 'panel' }, h('h2', {}, '30 hari terakhir'), chart(data.daily)),
     h('div', { class: 'tabs-row', role: 'group' }, Object.entries(views).map(([id, [label]]) =>
       h('button', { class: `chip${id === view ? ' on' : ''}`, 'aria-pressed': String(id === view), onclick: () => { view = id; render(data) } }, label))),

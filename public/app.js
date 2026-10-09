@@ -219,6 +219,30 @@ function accountDialog(locked) {
     h('p', { class: 'note' }, 'Minta orang tua untuk masuk ya. ', h('a', { href: '/privacy' }, 'Kebijakan Privasi')))
 }
 
+// ── Support (donations by QRIS) ─────────────────────────────────────────────
+// The QRIS is Ayok Ngaji's: same maker, so payment apps show that name.
+
+function donateCard() {
+  return h('section', { class: 'donate' },
+    h('div', { class: 'big-emoji', 'aria-hidden': 'true' }, '💝'),
+    h('div', {},
+      h('h2', {}, 'Dukung Smart Worksheet'),
+      h('p', {}, 'Smart Worksheet gratis dan tanpa iklan. Dukungan dari Ayah Bunda membantu biaya server, membuat lembar kerja baru, dan menjaganya tetap aman untuk anak.'),
+      h('button', { class: 'btn donate-btn', onclick: showQris }, 'Beri dukungan 💝')))
+}
+
+/** The QRIS, with a way to save it: the phone showing it can't also scan it. */
+function showQris() {
+  beacon('/api/event', { type: 'donate_tap' })
+  sheetDialog(
+    h('h2', {}, 'Dukung lewat QRIS'),
+    h('img', { class: 'qris', src: 'qris.jpg', alt: 'QRIS dukungan Smart Worksheet', width: 874, height: 1240 }),
+    h('p', { class: 'note' }, 'Pindai dengan aplikasi bank atau e-wallet apa pun (GoPay, OVO, DANA, ShopeePay, m-banking). Pakai HP ini? Simpan gambarnya, lalu pilih dari galeri di aplikasimu.'),
+    h('p', { class: 'note' }, 'Nama penerima tertulis "Ayok Ngaji" — pembuat yang sama dengan Smart Worksheet.'),
+    h('a', { class: 'btn', href: 'qris.jpg', download: 'QRIS-Smart-Worksheet.jpg' }, '⬇ Simpan gambar QR'),
+    h('p', {}, 'Berapa pun sangat membantu. Terima kasih! 🙏'))
+}
+
 // ── Screens ─────────────────────────────────────────────────────────────────
 
 let leave = () => {}
@@ -257,6 +281,7 @@ function homeScreen() {
           ? h('span', { class: 'card-stars', 'aria-label': `${best[sheet.id] ?? 0} dari 3 bintang` },
               [1, 2, 3].map(n => h('i', { class: n <= (best[sheet.id] ?? 0) ? 'on' : '' }, '★')))
           : h('span', { class: 'card-lock' }, user ? `Butuh ${group.need} ⭐` : 'Masuk untuk membuka')))))),
+    donateCard(),
     h('footer', { class: 'foot' },
       h('img', { src: 'brand/childplay-logo-horizontal.svg', alt: 'childplay — belajar sambil bermain' }),
       h('p', {}, 'Tanpa iklan. Suara hewan: rekaman CC0 dari BigSoundBank & Wikimedia Commons.'))))

@@ -246,6 +246,14 @@ main { max-width: 980px; margin: 0 auto; padding: max(12px, env(safe-area-inset-
 .link-btn { border: 0; background: none; color: var(--muted); text-decoration: underline; font-weight: 800; font-size: 14px; padding: 6px; }
 .note a { color: var(--teal-lo); text-decoration: underline; }
 
+/* Support */
+.donate { display: flex; gap: 14px; align-items: flex-start; margin: 26px 0 0; padding: 18px; border-radius: var(--radius); background: var(--coral-soft); }
+.donate .big-emoji { font-size: 44px; }
+.donate h2 { margin: 0 0 4px; font-size: 21px; color: #B65640; }
+.donate p { margin: 0 0 12px; font-weight: 700; line-height: 1.45; }
+.btn.donate-btn { background: var(--coral); box-shadow: 0 4px 0 #C25A44; }
+.qris { width: min(100%, 300px); height: auto; border-radius: 16px; box-shadow: var(--shadow); }
+
 /* Dialog */
 dialog.sheet { border: 0; border-radius: 28px; padding: 0; width: min(92vw, 420px); box-shadow: 0 20px 60px rgba(36,52,71,.25); color: var(--navy); }
 dialog.sheet::backdrop { background: rgba(36, 52, 71, .35); }
