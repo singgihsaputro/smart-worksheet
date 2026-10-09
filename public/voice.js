@@ -56,10 +56,14 @@ function distance(a, b) {
  * thing, a word in it, or — for longer words — one letter off (a child's
  * "kucin" for kucing). Short answers must be exact, and so must everything
  * when `exact` (numbers and letters, where one letter off is another answer).
+ * `not`: longer answers that contain this one and mean something else.
  */
-export function said(heard, accepted, { exact = false } = {}) {
+export function said(heard, accepted, { exact = false, not = [] } = {}) {
   const answers = accepted.map(clean).filter(Boolean)
+  const others = not.map(clean).filter(Boolean)
   return heard.map(clean).some(text => {
+    // Another answer that contains this one: "merah muda" is not "merah".
+    if (others.some(other => ` ${text} `.includes(` ${other} `))) return false
     const words = text.split(' ')
     return answers.some(answer => {
       if (text === answer) return true

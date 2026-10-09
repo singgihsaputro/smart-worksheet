@@ -1,7 +1,7 @@
 // The worksheets. Each one builds itself into `area`, calls done({ mistakes })
 // when the child has finished, and returns a cleanup for when they leave early.
 // Stars come from mistakes (app.js): none → 3, one or two → 2, more → 1.
-import { ANIMALS, FRUITS, PLANTS, THINGS, VEHICLES, WORDS, pick, shuffle } from './data.js'
+import { ANIMALS, COLORS, FRUITS, PLANTS, SHAPES, THINGS, VEHICLES, WORDS, pick, shuffle } from './data.js'
 import { h } from './dom.js'
 import { draggable } from './drag.js'
 import { sfx } from './sfx.js'
@@ -336,7 +336,7 @@ function drawing(area, done) {
   return () => ro.disconnect()
 }
 
-// ── 9–15. Say it: numbers, letters, words, names of animals, fruit, things, vehicles ─────────────────────
+// ── 9–17. Say it: numbers, letters, words, names of animals, fruit, things, vehicles, colours, shapes ─────────────────────
 /**
  * Shared by the speaking games. Each round shows something and accepts some
  * answers; the child taps the mic and says it. Two misses offer the answer and
@@ -368,7 +368,7 @@ function speak(area, done, rounds) {
         busy = true; mic.classList.add('on')
         try {
           const heard = await listen({ onStart: () => { status.textContent = 'Aku mendengarkan… 👂' } })
-          if (said(heard, r.accept, { exact: r.exact })) win()
+          if (said(heard, r.accept, { exact: r.exact, not: r.not })) win()
           else miss(heard.length ? `Aku dengar "${heard[0]}". Coba lagi ya!` : 'Aku belum dengar. Ucapkan lebih keras ya!')
         } catch {
           // No mic permission or no recogniser: carry on by tapping.
@@ -415,9 +415,24 @@ function sayWord(area, done) {
   })))
 }
 
-/** Name the picture: animals, fruit, things or vehicles. */
-const sayName = list => (area, done) => speak(area, done, pick(list, 5).map(x => ({
-  show: h('span', { class: 'emoji prompt-emoji' }, x.emoji), accept: [x.name, ...(x.also ?? [])], answer: x.name,
+const spaced = text => ` ${text.toLowerCase().replace(/-/g, ' ')} `
+const BRIGHT = ['#E9785E', '#27847B', '#F6C344', '#7CCBDD', '#8E6CE0', '#F06292']
+
+/** A colour as a paint blob. */
+export const colorBlob = c => h('span', { class: `color-blob${c.id === 'white' ? ' light' : ''}`, style: `--c:${c.hex}`, role: 'img', 'aria-label': c.name })
+
+/** A shape from data.js, filled with a colour. */
+export function shapePic(shape, fill) {
+  const pic = h('span', { class: 'shape-pic', role: 'img', 'aria-label': shape.name })
+  pic.innerHTML = `<svg viewBox="0 0 100 100" aria-hidden="true"><g fill="${fill}">${shape.svg}</g></svg>`
+  return pic
+}
+
+/** Name the picture: animals, fruit, things, vehicles, colours or shapes. */
+const sayName = (list, draw = x => h('span', { class: 'emoji prompt-emoji' }, x.emoji)) => (area, done) => speak(area, done, pick(list, 5).map(x => ({
+  show: draw(x), accept: [x.name, ...(x.also ?? [])], answer: x.name,
+  // Others' answers that contain this one ("burung hantu", "mobil polisi") don't count for it.
+  not: list.filter(y => y !== x).flatMap(y => [y.name, ...(y.also ?? [])]).filter(other => spaced(other).includes(spaced(x.name))),
   choices: [x.name, ...pick(list.filter(y => y.id !== x.id), 2).map(y => y.name)],
 })))
 
@@ -445,6 +460,8 @@ export const SHEETS = [
   { id: 'say-fruit', group: 'talk', title: 'Tebak Nama Buah', emoji: '🍓', color: 'coral', blurb: 'Sebutkan nama buahnya', how: 'Ketuk 🎤 lalu sebutkan nama buah di gambar.', start: sayName(FRUITS) },
   { id: 'say-thing', group: 'talk', title: 'Tebak Nama Benda', emoji: '🎈', color: 'sky', blurb: 'Sebutkan nama bendanya', how: 'Ketuk 🎤 lalu sebutkan nama benda di gambar.', start: sayName(THINGS) },
   { id: 'say-vehicle', group: 'talk', title: 'Tebak Transportasi', emoji: '🚌', color: 'sun', blurb: 'Sebutkan nama kendaraannya', how: 'Ketuk 🎤 lalu sebutkan nama kendaraan di gambar.', start: sayName(VEHICLES) },
+  { id: 'say-color', group: 'talk', title: 'Tebak Warna', emoji: '🎨', color: 'coral', blurb: 'Sebutkan warnanya', how: 'Ketuk 🎤 lalu sebutkan warna yang tampil.', start: sayName(COLORS, colorBlob) },
+  { id: 'say-shape', group: 'talk', title: 'Tebak Bentuk', emoji: '🔷', color: 'teal', blurb: 'Sebutkan nama bentuknya', how: 'Ketuk 🎤 lalu sebutkan nama bentuk yang tampil.', start: sayName(SHAPES, s => shapePic(s, pick(BRIGHT, 1)[0])) },
   { id: 'say-letter', group: 'read', title: 'Tebak Huruf', emoji: '🔤', color: 'sky', blurb: 'Sebutkan hurufnya', how: 'Ketuk 🎤 lalu sebutkan huruf yang tampil.', start: sayLetter },
   { id: 'say-word', group: 'read', title: 'Tebak Kata', emoji: '📖', color: 'coral', blurb: 'Baca katanya keras-keras', how: 'Ketuk 🎤 lalu baca kata yang tampil.', start: sayWord },
   { id: 'memory', group: 'match', title: 'Kartu Ingatan', emoji: '🃏', color: 'sky', blurb: 'Temukan pasangan kartu', how: 'Buka dua kartu. Cari yang gambarnya sama!', start: memory },

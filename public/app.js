@@ -1,8 +1,8 @@
 // Smart Worksheet by childplay — the shell: home, routing, account, stars.
 // Each worksheet lives in sheets.js and reports back when it's finished.
 import { h } from './dom.js'
-import { ABC, ANIMALS, FRUITS, PLANTS, THINGS, VEHICLES } from './data.js'
-import { GROUPS, SHEETS } from './sheets.js'
+import { ABC, ANIMALS, COLORS, FRUITS, PLANTS, SHAPES, THINGS, VEHICLES } from './data.js'
+import { GROUPS, SHEETS, colorBlob, shapePic } from './sheets.js'
 import { sfx } from './sfx.js'
 import { numberWords, say } from './voice.js'
 
@@ -352,6 +352,8 @@ function sums() {
 const TOPICS = [
   ['huruf', '🔤 Huruf', () => ABC.map(([letter, name, emoji]) => ({ nodes: [big(`${letter}${letter.toLowerCase()}`), pic(emoji, 'small'), label(name)], say: `${letter}. ${name}` }))],
   ['angka', '🔢 Angka', () => Array.from({ length: 20 }, (_, i) => ({ nodes: [big(String(i + 1)), h('span', { class: 'emoji dots' }, fives(i + 1)), label(word(i + 1))], say: word(i + 1) }))],
+  ['warna', '🎨 Warna', () => COLORS.map(c => ({ nodes: [colorBlob(c), label(c.name)], say: c.name }))],
+  ['bentuk', '🔷 Bentuk', () => SHAPES.map((s, i) => ({ nodes: [shapePic(s, ['#27847B', '#E9785E', '#F6C344', '#7CCBDD', '#8E6CE0'][i % 5]), label(s.name)], say: s.name }))],
   ['hewan', '🐾 Hewan', () => named(ANIMALS)],
   ['tanaman', '🌳 Tanaman', () => named(PLANTS)],
   ['buah', '🍎 Buah', () => named(FRUITS)],

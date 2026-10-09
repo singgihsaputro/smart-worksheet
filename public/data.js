@@ -77,6 +77,30 @@ export const PLANTS = [
   { id: 'chili', emoji: '🌶️', name: 'Cabai', also: ['cabe', 'lombok'] }, { id: 'eggplant', emoji: '🍆', name: 'Terong', also: ['terung'] },
 ]
 
+export const COLORS = [
+  { id: 'red', name: 'Merah', hex: '#E53935' }, { id: 'orange', name: 'Oranye', hex: '#FB8C00', also: ['jingga', 'orange', 'oren'] },
+  { id: 'yellow', name: 'Kuning', hex: '#FDD835' }, { id: 'green', name: 'Hijau', hex: '#43A047' },
+  { id: 'blue', name: 'Biru', hex: '#1E88E5' }, { id: 'purple', name: 'Ungu', hex: '#8E24AA' },
+  { id: 'pink', name: 'Merah Muda', hex: '#F06292', also: ['pink', 'merah jambu'] }, { id: 'brown', name: 'Cokelat', hex: '#8D5A3B', also: ['coklat'] },
+  { id: 'black', name: 'Hitam', hex: '#263238' }, { id: 'white', name: 'Putih', hex: '#FFFFFF' },
+  { id: 'gray', name: 'Abu-abu', hex: '#9E9E9E', also: ['abu', 'kelabu'] },
+]
+
+// Flat shapes, drawn in a 100×100 SVG box.
+export const SHAPES = [
+  { id: 'circle', name: 'Lingkaran', also: ['bulat', 'bundar'], svg: '<circle cx="50" cy="50" r="42"/>' },
+  { id: 'square', name: 'Persegi', also: ['kotak', 'segi empat'], svg: '<rect x="12" y="12" width="76" height="76" rx="3"/>' },
+  { id: 'rectangle', name: 'Persegi Panjang', svg: '<rect x="4" y="25" width="92" height="50" rx="3"/>' },
+  { id: 'triangle', name: 'Segitiga', also: ['segi tiga'], svg: '<polygon points="50,8 95,88 5,88"/>' },
+  { id: 'star', name: 'Bintang', svg: '<polygon points="50,7 61.2,37.6 93.7,38.8 68.1,58.9 77,90.2 50,72 23,90.2 31.9,58.9 6.3,38.8 38.8,37.6"/>' },
+  { id: 'heart', name: 'Hati', also: ['love', 'cinta'], svg: '<path d="M50 88C20 68 4 50 4 32 4 16 16 6 29 6c10 0 17 6 21 14 4-8 11-14 21-14 13 0 25 10 25 26 0 18-16 36-46 56z"/>' },
+  { id: 'oval', name: 'Oval', also: ['lonjong', 'elips'], svg: '<ellipse cx="50" cy="50" rx="45" ry="30"/>' },
+  { id: 'diamond', name: 'Belah Ketupat', also: ['wajik', 'ketupat'], svg: '<polygon points="50,4 88,50 50,96 12,50"/>' },
+  { id: 'pentagon', name: 'Segi Lima', also: ['pentagon'], svg: '<polygon points="50,10 91.8,40.4 75.9,89.6 24.1,89.6 8.2,40.4"/>' },
+  { id: 'hexagon', name: 'Segi Enam', also: ['heksagon'], svg: '<polygon points="96,50 73,89.8 27,89.8 4,50 27,10.2 73,10.2"/>' },
+  { id: 'crescent', name: 'Bulan Sabit', also: ['bulan'], svg: '<path d="M72 8A42 42 0 1 0 72 92 50 50 0 0 1 72 8z"/>' },
+]
+
 // One picture word per letter, for Belajar → Huruf.
 export const ABC = [
   ['A', 'Apel', '🍎'], ['B', 'Bola', '⚽'], ['C', 'Ceri', '🍒'], ['D', 'Domba', '🐑'], ['E', 'Elang', '🦅'],

@@ -12,11 +12,11 @@ account and synced, so every child's progress is their own.
 | 1 · Ayo Mulai (free) | Cari Bayangan (shadows), Makanan Hewan (animal food), Cari di Gambar (find things in a busy picture), Ayo Berhitung (counting) |
 | 2 · Pintar Mencocokkan (5★) | Puzzle Gambar (4/9/16 pieces), Kelompokkan (sort into baskets), Kartu Ingatan (memory) |
 | 3 · Kreasi & Suara (12★) | Tebak Suara (animal sounds), Mewarnai (colouring), Puzzle Fotoku (puzzle from your own photo — it never leaves the device) |
-| 4 · Ayo Bicara (20★) | Tebak Nama Hewan, Tebak Angka, Tebak Nama Buah, Tebak Nama Benda, Tebak Transportasi — say it (speech recognition, Indonesian) |
+| 4 · Ayo Bicara (20★) | Tebak Nama Hewan, Tebak Angka, Tebak Nama Buah, Tebak Nama Benda, Tebak Transportasi, Tebak Warna, Tebak Bentuk — say it (speech recognition, Indonesian) |
 | 5 · Huruf & Kata (28★) | Tebak Huruf, Tebak Kata — say the letter / read the word aloud |
 
 The **Belajar** tab (free, no stars) has picture cards to tap and hear: letters
-A–Z with a word each, numbers 1–20, animals, plants, fruit, things, vehicles,
+A–Z with a word each, numbers 1–20, colours, shapes, animals, plants, fruit, things, vehicles,
 and simple sums. It speaks with the device's own Indonesian voice (`say()` in
 `voice.js`); without one, the cards still show the words.
 

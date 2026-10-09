@@ -1,7 +1,7 @@
 // What counts as the right spoken answer (public/voice.js).
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { ABC, ANIMALS, FRUITS, PLANTS, THINGS, VEHICLES } from '../public/data.js'
+import { ABC, ANIMALS, COLORS, FRUITS, PLANTS, SHAPES, THINGS, VEHICLES } from '../public/data.js'
 import { letterWords, numberWords, said } from '../public/voice.js'
 
 test('numbers: digits or Indonesian words', () => {
@@ -34,7 +34,7 @@ test('words and animal names: whole, in a sentence, or one letter off when long'
 })
 
 test('picture lists: every name is accepted as said, and no picture or answer repeats', () => {
-  for (const list of [ANIMALS, FRUITS, THINGS, VEHICLES, PLANTS]) {
+  for (const list of [ANIMALS, FRUITS, THINGS, VEHICLES, PLANTS, COLORS, SHAPES]) {
     assert.equal(new Set(list.map(x => x.id)).size, list.length)
     assert.equal(new Set(list.map(x => x.name)).size, list.length)  // tap-mode choices must differ
     for (const x of list) assert.ok(said([x.name.toLowerCase()], [x.name, ...(x.also ?? [])]), x.name)
@@ -45,4 +45,12 @@ test('picture lists: every name is accepted as said, and no picture or answer re
   assert.ok(said(['mobil pemadam'], ['Pemadam Kebakaran', 'mobil pemadam', 'pemadam', 'damkar']))
   assert.deepEqual(ABC.map(([letter]) => letter).join(''), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ')
   for (const [letter, word] of ABC) assert.equal(word[0], letter)
+})
+
+test('a longer answer that contains this one is a different answer', () => {
+  assert.ok(said(['merah'], ['Merah'], { not: ['Merah Muda'] }))
+  assert.ok(said(['itu merah'], ['Merah'], { not: ['Merah Muda'] }))
+  assert.ok(!said(['merah muda'], ['Merah'], { not: ['Merah Muda'] }))
+  assert.ok(!said(['persegi panjang'], ['Persegi', 'kotak'], { not: ['Persegi Panjang'] }))
+  assert.ok(said(['abu-abu'], ['Abu-abu', 'abu', 'kelabu']))
 })
