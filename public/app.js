@@ -1,8 +1,10 @@
 // Smart Worksheet by childplay — the shell: home, routing, account, stars.
 // Each worksheet lives in sheets.js and reports back when it's finished.
 import { h } from './dom.js'
+import { ABC, ANIMALS, FRUITS, PLANTS, THINGS, VEHICLES } from './data.js'
 import { GROUPS, SHEETS } from './sheets.js'
 import { sfx } from './sfx.js'
+import { numberWords, say } from './voice.js'
 
 const $app = document.getElementById('app')
 
@@ -278,7 +280,7 @@ let leave = () => {}
 const $nav = document.body.appendChild(h('nav', { class: 'tabs' }))
 
 function tabs(active) {
-  return [['main', '#/', '🧩', 'Main'], ['dukung', '#/dukung', '💝', 'Dukung']]
+  return [['main', '#/', '🧩', 'Main'], ['belajar', '#/belajar', '📚', 'Belajar'], ['dukung', '#/dukung', '💝', 'Dukung']]
     .map(([id, href, icon, label]) => h('a', { class: `tab${id === active ? ' on' : ''}`, href, 'aria-current': id === active ? 'page' : null },
       h('span', { class: 'tab-icon', 'aria-hidden': 'true' }, icon), h('span', {}, label)))
 }
@@ -321,6 +323,62 @@ function homeScreen() {
       h('img', { src: 'brand/childplay-logo-horizontal.svg', alt: 'childplay — belajar sambil bermain' }),
       h('p', {}, 'Tanpa iklan. Suara hewan: rekaman CC0 dari BigSoundBank & Wikimedia Commons.'))))
   return () => {}
+}
+
+// ── Belajar: picture cards to look at and listen to (free for everyone) ─────
+
+const big = text => h('b', { class: 'big' }, text)
+const pic = (emoji, size = '') => h('span', { class: `emoji learn-emoji ${size}` }, emoji)
+const label = text => h('span', { class: 'name' }, text)
+const word = n => numberWords(n)[1]
+const fives = n => Array.from({ length: Math.ceil(n / 5) }, (_, i) => '⭐'.repeat(Math.min(5, n - i * 5))).join(' ') // easier to count
+const named = list => list.map(x => ({ nodes: [pic(x.emoji), label(x.name)], say: x.name }))
+
+/** Adding up to 5 + 5 and taking away from up to 6, with fruit to count. */
+function sums() {
+  const cards = []
+  const fruit = (a, b) => FRUITS[(a * 3 + b) % FRUITS.length].emoji
+  for (let a = 1; a <= 5; a++) for (let b = 1; b <= 5; b++) cards.push({
+    nodes: [h('span', { class: 'emoji math-art' }, fruit(a, b).repeat(a), ' + ', fruit(a, b).repeat(b)), big(`${a} + ${b} = ?`)],
+    answer: `${a} + ${b} = ${a + b}`, say: `${word(a)} tambah ${word(b)} sama dengan ${word(a + b)}`,
+  })
+  for (let a = 2; a <= 6; a++) for (let b = 1; b < a; b++) cards.push({
+    nodes: [h('span', { class: 'emoji math-art' }, Array.from({ length: a }, (_, i) => h('span', { class: i >= a - b ? 'gone' : '' }, fruit(a, b)))), big(`${a} − ${b} = ?`)],
+    answer: `${a} − ${b} = ${a - b}`, say: `${word(a)} kurang ${word(b)} sama dengan ${word(a - b)}`,
+  })
+  return cards
+}
+
+const TOPICS = [
+  ['huruf', '🔤 Huruf', () => ABC.map(([letter, name, emoji]) => ({ nodes: [big(`${letter}${letter.toLowerCase()}`), pic(emoji, 'small'), label(name)], say: `${letter}. ${name}` }))],
+  ['angka', '🔢 Angka', () => Array.from({ length: 20 }, (_, i) => ({ nodes: [big(String(i + 1)), h('span', { class: 'emoji dots' }, fives(i + 1)), label(word(i + 1))], say: word(i + 1) }))],
+  ['hewan', '🐾 Hewan', () => named(ANIMALS)],
+  ['tanaman', '🌳 Tanaman', () => named(PLANTS)],
+  ['buah', '🍎 Buah', () => named(FRUITS)],
+  ['benda', '🧸 Benda', () => named(THINGS)],
+  ['kendaraan', '🚗 Kendaraan', () => named(VEHICLES)],
+  ['hitung', '➕ Berhitung', sums],
+]
+
+function learnScreen(topic) {
+  const [id, , cards] = TOPICS.find(t => t[0] === topic) ?? TOPICS[0]
+  $app.replaceChildren(h('main', { class: 'home' },
+    topBar(false),
+    h('section', { class: 'hero' }, h('h1', {}, 'Ayo belajar!'), h('p', {}, 'Ketuk kartunya untuk mendengar namanya.')),
+    h('nav', { class: 'topics', 'aria-label': 'Topik' }, TOPICS.map(([t, name]) =>
+      h('a', { class: `chip${t === id ? ' on' : ''}`, href: `#/belajar/${t}`, 'aria-current': t === id ? 'page' : null }, name))),
+    h('div', { class: `learn-grid ${id}` }, cards().map(c => h('button', {
+      class: 'learn-card',
+      onclick(e) {
+        const el = e.currentTarget
+        el.classList.remove('on'); void el.offsetWidth; el.classList.add('on')
+        if (c.answer) el.querySelector('.big').textContent = c.answer
+        say(c.say)
+      },
+    }, c.nodes)))))
+  // The chosen topic stays in view when switching between them.
+  $app.querySelector('.topics .on')?.scrollIntoView({ block: 'nearest', inline: 'center' })
+  return () => { if (typeof speechSynthesis !== 'undefined') speechSynthesis.cancel() }
 }
 
 /** For parents: a review and a donation. */
@@ -391,8 +449,9 @@ function route() {
   }
   if (sheet && dialog.open) dialog.close() // a lock message must not follow the child into a worksheet
   document.body.classList.toggle('has-nav', !sheet)
-  $nav.replaceChildren(...(sheet ? [] : tabs(page === 'dukung' ? 'dukung' : 'main')))
-  leave = sheet ? sheetScreen(sheet) : page === 'signin' ? signinScreen(id) : page === 'dukung' ? supportScreen() : homeScreen()
+  $nav.replaceChildren(...(sheet ? [] : tabs(['belajar', 'dukung'].includes(page) ? page : 'main')))
+  leave = sheet ? sheetScreen(sheet) : page === 'signin' ? signinScreen(id) : page === 'dukung' ? supportScreen()
+    : page === 'belajar' ? learnScreen(id) : homeScreen()
   window.scrollTo(0, 0)
 }
 addEventListener('hashchange', route)

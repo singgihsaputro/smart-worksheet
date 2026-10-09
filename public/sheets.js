@@ -1,7 +1,7 @@
 // The worksheets. Each one builds itself into `area`, calls done({ mistakes })
 // when the child has finished, and returns a cleanup for when they leave early.
 // Stars come from mistakes (app.js): none → 3, one or two → 2, more → 1.
-import { ANIMALS, FRUITS, THINGS, WORDS, pick, shuffle } from './data.js'
+import { ANIMALS, FRUITS, PLANTS, THINGS, VEHICLES, WORDS, pick, shuffle } from './data.js'
 import { h } from './dom.js'
 import { draggable } from './drag.js'
 import { sfx } from './sfx.js'
@@ -221,6 +221,35 @@ function counting(area, done) {
   round()
 }
 
+// ── 6b. Find it: spot what's asked for in a busy picture ────────────────────
+function findIt(area, done) {
+  const COLS = 5, ROWS = 4, ROUNDS = 5
+  const items = pick([...ANIMALS, ...FRUITS, ...THINGS, ...VEHICLES, ...PLANTS], COLS * ROWS)
+  const targets = pick(items, ROUNDS)
+  let k = 0, mistakes = 0
+  const dots = h('p', { class: 'progress-dots' })
+  const ask = h('p', { class: 'question find-what' })
+  function show() {
+    dots.replaceChildren(...targets.map((_, i) => h('i', { class: i < k ? 'on' : i === k ? 'now' : '' })))
+    ask.replaceChildren('Temukan ', h('span', { class: 'emoji' }, targets[k].emoji), ` ${targets[k].name}!`)
+  }
+  // One thing per cell of a 5×4 grid, nudged, sized and tilted at random so it looks scattered.
+  const spots = items.map((x, i) => h('button', {
+    class: 'spot emoji', 'aria-label': x.name,
+    style: `left:${(i % COLS + 0.04 + Math.random() * 0.26) * 100 / COLS}%;top:${(Math.floor(i / COLS) + 0.04 + Math.random() * 0.26) * 100 / ROWS}%;` +
+      `--s:${(0.75 + Math.random() * 0.4).toFixed(2)};--r:${Math.round(Math.random() * 40 - 20)}deg`,
+    onclick(e) {
+      const el = e.currentTarget
+      if (x !== targets[k]) { mistakes++; sfx.tryAgain(); el.classList.remove('nope'); void el.offsetWidth; el.classList.add('nope'); return }
+      el.classList.add('found'); el.disabled = true; sfx.good()
+      if (++k < ROUNDS) show()
+      else { dots.replaceChildren(...targets.map(() => h('i', { class: 'on' }))); later(() => done({ mistakes }), 900) }
+    },
+  }, x.emoji))
+  show()
+  area.replaceChildren(dots, ask, h('div', { class: 'scene' }, spots))
+}
+
 // ── 7. Memory: find the pairs ────────────────────────────────────────────────
 function memory(area, done) {
   const set = pick([...ANIMALS, ...FRUITS], 6)
@@ -307,7 +336,7 @@ function drawing(area, done) {
   return () => ro.disconnect()
 }
 
-// ── 9–12. Say it: numbers, letters, words, animal names ─────────────────────
+// ── 9–15. Say it: numbers, letters, words, names of animals, fruit, things, vehicles ─────────────────────
 /**
  * Shared by the speaking games. Each round shows something and accepts some
  * answers; the child taps the mic and says it. Two misses offer the answer and
@@ -386,12 +415,11 @@ function sayWord(area, done) {
   })))
 }
 
-function sayAnimal(area, done) {
-  speak(area, done, pick(ANIMALS, 5).map(a => ({
-    show: h('span', { class: 'emoji prompt-emoji' }, a.emoji), accept: [a.name, ...(a.also ?? [])], answer: a.name,
-    choices: [a.name, ...pick(ANIMALS.filter(x => x.id !== a.id), 2).map(x => x.name)],
-  })))
-}
+/** Name the picture: animals, fruit, things or vehicles. */
+const sayName = list => (area, done) => speak(area, done, pick(list, 5).map(x => ({
+  show: h('span', { class: 'emoji prompt-emoji' }, x.emoji), accept: [x.name, ...(x.also ?? [])], answer: x.name,
+  choices: [x.name, ...pick(list.filter(y => y.id !== x.id), 2).map(y => y.name)],
+})))
 
 /** Levels: each opens once a child has collected enough stars (saved per account). */
 export const GROUPS = [
@@ -408,11 +436,15 @@ export const SHEETS = [
   { id: 'puzzle', group: 'match', title: 'Puzzle Gambar', emoji: '🧩', color: 'sun', blurb: 'Susun potongan jadi gambar utuh', how: 'Geser potongan ke tempat yang benar.', start: puzzle },
   { id: 'sound', group: 'create', title: 'Tebak Suara', emoji: '🔊', color: 'sky', blurb: 'Hewan apa yang bersuara?', how: 'Dengarkan suaranya, lalu ketuk hewan yang benar.', start: sounds },
   { id: 'draw', group: 'create', title: 'Mewarnai', emoji: '🖍️', color: 'coral', blurb: 'Gambar dan warnai hewan', how: 'Pilih warna, lalu gambar di atas hewan.', start: drawing },
+  { id: 'find', group: 'start', title: 'Cari di Gambar', emoji: '🔍', color: 'sky', blurb: 'Temukan benda yang dicari', how: 'Lihat gambarnya, lalu ketuk benda yang diminta.', start: findIt },
   { id: 'count', group: 'start', title: 'Ayo Berhitung', emoji: '🍎', color: 'sun', blurb: 'Hitung buahnya', how: 'Hitung buahnya, lalu ketuk angka yang benar.', start: counting },
   { id: 'sort', group: 'match', title: 'Kelompokkan', emoji: '🧺', color: 'teal', blurb: 'Hewan, buah, atau benda?', how: 'Geser setiap gambar ke keranjang yang benar.', start: sorting },
   { id: 'photo', group: 'create', title: 'Puzzle Fotoku', emoji: '📸', color: 'coral', blurb: 'Puzzle dari fotomu sendiri', how: 'Pilih foto, lalu susun potongannya.', start: photoPuzzle },
-  { id: 'say-animal', group: 'talk', title: 'Tebak Nama Hewan', emoji: '🐼', color: 'teal', blurb: 'Sebutkan nama hewannya', how: 'Ketuk 🎤 lalu sebutkan nama hewan di gambar.', start: sayAnimal },
+  { id: 'say-animal', group: 'talk', title: 'Tebak Nama Hewan', emoji: '🐼', color: 'teal', blurb: 'Sebutkan nama hewannya', how: 'Ketuk 🎤 lalu sebutkan nama hewan di gambar.', start: sayName(ANIMALS) },
   { id: 'say-number', group: 'talk', title: 'Tebak Angka', emoji: '🔢', color: 'sun', blurb: 'Sebutkan angkanya', how: 'Ketuk 🎤 lalu sebutkan angka yang tampil.', start: sayNumber },
+  { id: 'say-fruit', group: 'talk', title: 'Tebak Nama Buah', emoji: '🍓', color: 'coral', blurb: 'Sebutkan nama buahnya', how: 'Ketuk 🎤 lalu sebutkan nama buah di gambar.', start: sayName(FRUITS) },
+  { id: 'say-thing', group: 'talk', title: 'Tebak Nama Benda', emoji: '🎈', color: 'sky', blurb: 'Sebutkan nama bendanya', how: 'Ketuk 🎤 lalu sebutkan nama benda di gambar.', start: sayName(THINGS) },
+  { id: 'say-vehicle', group: 'talk', title: 'Tebak Transportasi', emoji: '🚌', color: 'sun', blurb: 'Sebutkan nama kendaraannya', how: 'Ketuk 🎤 lalu sebutkan nama kendaraan di gambar.', start: sayName(VEHICLES) },
   { id: 'say-letter', group: 'read', title: 'Tebak Huruf', emoji: '🔤', color: 'sky', blurb: 'Sebutkan hurufnya', how: 'Ketuk 🎤 lalu sebutkan huruf yang tampil.', start: sayLetter },
   { id: 'say-word', group: 'read', title: 'Tebak Kata', emoji: '📖', color: 'coral', blurb: 'Baca katanya keras-keras', how: 'Ketuk 🎤 lalu baca kata yang tampil.', start: sayWord },
   { id: 'memory', group: 'match', title: 'Kartu Ingatan', emoji: '🃏', color: 'sky', blurb: 'Temukan pasangan kartu', how: 'Buka dua kartu. Cari yang gambarnya sama!', start: memory },

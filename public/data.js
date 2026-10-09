@@ -30,21 +30,60 @@ export const ANIMALS = [
 ]
 
 export const FRUITS = [
-  { id: 'apple', emoji: '🍎', name: 'Apel' }, { id: 'banana', emoji: '🍌', name: 'Pisang' },
+  { id: 'apple', emoji: '🍎', name: 'Apel', also: ['apple'] }, { id: 'banana', emoji: '🍌', name: 'Pisang' },
   { id: 'grapes', emoji: '🍇', name: 'Anggur' }, { id: 'orange', emoji: '🍊', name: 'Jeruk' },
-  { id: 'strawberry', emoji: '🍓', name: 'Stroberi' }, { id: 'watermelon', emoji: '🍉', name: 'Semangka' },
-  { id: 'pineapple', emoji: '🍍', name: 'Nanas' }, { id: 'mango', emoji: '🥭', name: 'Mangga' },
-  { id: 'pear', emoji: '🍐', name: 'Pir' }, { id: 'cherry', emoji: '🍒', name: 'Ceri' },
-  { id: 'kiwi', emoji: '🥝', name: 'Kiwi' }, { id: 'peach', emoji: '🍑', name: 'Persik' },
+  { id: 'strawberry', emoji: '🍓', name: 'Stroberi', also: ['strawberry', 'stroberry'] }, { id: 'watermelon', emoji: '🍉', name: 'Semangka' },
+  { id: 'pineapple', emoji: '🍍', name: 'Nanas', also: ['nenas'] }, { id: 'mango', emoji: '🥭', name: 'Mangga' },
+  { id: 'pear', emoji: '🍐', name: 'Pir', also: ['pear', 'per'] }, { id: 'cherry', emoji: '🍒', name: 'Ceri', also: ['cherry'] },
+  { id: 'kiwi', emoji: '🥝', name: 'Kiwi' }, { id: 'peach', emoji: '🍑', name: 'Persik', also: ['peach'] },
+  { id: 'lemon', emoji: '🍋', name: 'Lemon' }, { id: 'coconut', emoji: '🥥', name: 'Kelapa' },
 ]
 
 export const THINGS = [
-  { id: 'car', emoji: '🚗', name: 'Mobil' }, { id: 'ball', emoji: '⚽', name: 'Bola' },
-  { id: 'pencil', emoji: '✏️', name: 'Pensil' }, { id: 'bag', emoji: '🎒', name: 'Tas' },
-  { id: 'teddy', emoji: '🧸', name: 'Boneka' }, { id: 'bike', emoji: '🚲', name: 'Sepeda' },
+  { id: 'ball', emoji: '⚽', name: 'Bola' }, { id: 'pencil', emoji: '✏️', name: 'Pensil' },
+  { id: 'bag', emoji: '🎒', name: 'Tas', also: ['ransel'] }, { id: 'teddy', emoji: '🧸', name: 'Boneka', also: ['boneka beruang'] },
   { id: 'umbrella', emoji: '☂️', name: 'Payung' }, { id: 'shoe', emoji: '👟', name: 'Sepatu' },
-  { id: 'balloon', emoji: '🎈', name: 'Balon' }, { id: 'clock', emoji: '⏰', name: 'Jam' },
-  { id: 'book', emoji: '📚', name: 'Buku' }, { id: 'kite', emoji: '🪁', name: 'Layang-layang' },
+  { id: 'balloon', emoji: '🎈', name: 'Balon' }, { id: 'clock', emoji: '⏰', name: 'Jam', also: ['jam weker', 'weker'] },
+  { id: 'book', emoji: '📚', name: 'Buku' }, { id: 'kite', emoji: '🪁', name: 'Layang-layang', also: ['layangan'] },
+  { id: 'spoon', emoji: '🥄', name: 'Sendok' }, { id: 'key', emoji: '🔑', name: 'Kunci' },
+  { id: 'scissors', emoji: '✂️', name: 'Gunting' }, { id: 'lamp', emoji: '💡', name: 'Lampu', also: ['bohlam'] },
+  { id: 'tv', emoji: '📺', name: 'Televisi', also: ['tv', 'tivi', 'teve'] }, { id: 'gift', emoji: '🎁', name: 'Kado', also: ['hadiah'] },
+  { id: 'bell', emoji: '🔔', name: 'Lonceng', also: ['bel'] }, { id: 'bed', emoji: '🛏️', name: 'Kasur', also: ['tempat tidur', 'ranjang'] },
+  { id: 'broom', emoji: '🧹', name: 'Sapu' }, { id: 'glasses', emoji: '👓', name: 'Kacamata', also: ['kaca mata'] },
+  { id: 'hat', emoji: '🎩', name: 'Topi' }, { id: 'camera', emoji: '📷', name: 'Kamera' },
+]
+
+export const VEHICLES = [
+  { id: 'car', emoji: '🚗', name: 'Mobil' }, { id: 'bus', emoji: '🚌', name: 'Bus', also: ['bis'] },
+  { id: 'train', emoji: '🚆', name: 'Kereta', also: ['kereta api'] }, { id: 'plane', emoji: '✈️', name: 'Pesawat', also: ['pesawat terbang'] },
+  { id: 'ship', emoji: '🚢', name: 'Kapal', also: ['kapal laut'] }, { id: 'bike', emoji: '🚲', name: 'Sepeda' },
+  { id: 'motorbike', emoji: '🏍️', name: 'Motor', also: ['sepeda motor'] }, { id: 'helicopter', emoji: '🚁', name: 'Helikopter', also: ['heli'] },
+  { id: 'boat', emoji: '⛵', name: 'Perahu', also: ['perahu layar'] }, { id: 'truck', emoji: '🚚', name: 'Truk', also: ['truck'] },
+  { id: 'ambulance', emoji: '🚑', name: 'Ambulans', also: ['ambulan', 'ambulance'] },
+  { id: 'firetruck', emoji: '🚒', name: 'Pemadam Kebakaran', also: ['mobil pemadam', 'pemadam', 'damkar'] },
+  { id: 'taxi', emoji: '🚕', name: 'Taksi', also: ['taxi'] }, { id: 'rocket', emoji: '🚀', name: 'Roket' },
+  { id: 'tractor', emoji: '🚜', name: 'Traktor' }, { id: 'police', emoji: '🚓', name: 'Mobil Polisi', also: ['polisi'] },
+]
+
+export const PLANTS = [
+  { id: 'tree', emoji: '🌳', name: 'Pohon' }, { id: 'pine', emoji: '🌲', name: 'Cemara', also: ['pohon cemara'] },
+  { id: 'palm', emoji: '🌴', name: 'Pohon Kelapa', also: ['pohon palem', 'palem'] }, { id: 'cactus', emoji: '🌵', name: 'Kaktus' },
+  { id: 'sunflower', emoji: '🌻', name: 'Bunga Matahari' }, { id: 'rose', emoji: '🌹', name: 'Mawar', also: ['bunga mawar'] },
+  { id: 'tulip', emoji: '🌷', name: 'Tulip', also: ['bunga tulip'] }, { id: 'hibiscus', emoji: '🌺', name: 'Kembang Sepatu' },
+  { id: 'sprout', emoji: '🌱', name: 'Tunas' }, { id: 'clover', emoji: '🍀', name: 'Semanggi' },
+  { id: 'rice', emoji: '🌾', name: 'Padi' }, { id: 'bamboo', emoji: '🎋', name: 'Bambu' },
+  { id: 'corn', emoji: '🌽', name: 'Jagung' }, { id: 'carrot', emoji: '🥕', name: 'Wortel' },
+  { id: 'broccoli', emoji: '🥦', name: 'Brokoli' }, { id: 'tomato', emoji: '🍅', name: 'Tomat' },
+  { id: 'chili', emoji: '🌶️', name: 'Cabai', also: ['cabe', 'lombok'] }, { id: 'eggplant', emoji: '🍆', name: 'Terong', also: ['terung'] },
+]
+
+// One picture word per letter, for Belajar → Huruf.
+export const ABC = [
+  ['A', 'Apel', '🍎'], ['B', 'Bola', '⚽'], ['C', 'Ceri', '🍒'], ['D', 'Domba', '🐑'], ['E', 'Elang', '🦅'],
+  ['F', 'Foto', '📷'], ['G', 'Gajah', '🐘'], ['H', 'Harimau', '🐯'], ['I', 'Ikan', '🐟'], ['J', 'Jeruk', '🍊'],
+  ['K', 'Kucing', '🐱'], ['L', 'Lebah', '🐝'], ['M', 'Mobil', '🚗'], ['N', 'Nanas', '🍍'], ['O', 'Ombak', '🌊'],
+  ['P', 'Pisang', '🍌'], ['Q', 'Quran', '📖'], ['R', 'Rumah', '🏠'], ['S', 'Sapi', '🐮'], ['T', 'Topi', '🎩'],
+  ['U', 'Ular', '🐍'], ['V', 'Vas', '🏺'], ['W', 'Wortel', '🥕'], ['X', 'Xilofon', '🎶'], ['Y', 'Yoyo', '🪀'], ['Z', 'Zebra', '🦓'],
 ]
 
 // Short, everyday words for "Tebak Kata": read it aloud, and the picture appears.

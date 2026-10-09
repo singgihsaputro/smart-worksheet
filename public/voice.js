@@ -28,6 +28,17 @@ export function listen({ onStart } = {}) {
   })
 }
 
+/** Says text aloud in Indonesian with the device's own voice, when it has one. */
+export function say(text) {
+  if (typeof speechSynthesis === 'undefined') return
+  speechSynthesis.cancel()
+  const line = new SpeechSynthesisUtterance(text)
+  line.lang = 'id-ID'
+  line.voice = speechSynthesis.getVoices().find(v => v.lang.replace('_', '-').startsWith('id')) ?? null
+  line.rate = 0.85
+  speechSynthesis.speak(line)
+}
+
 const clean = text => text.toLowerCase().normalize('NFKD').replace(/[̀-ͯ]/g, '')
   .replace(/[-_]/g, ' ').replace(/[^a-z0-9 ]/g, '').replace(/\s+/g, ' ').trim()
 

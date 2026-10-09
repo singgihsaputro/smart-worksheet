@@ -264,7 +264,33 @@ main { max-width: 980px; margin: 0 auto; padding: max(12px, env(safe-area-inset-
 .btn:disabled { opacity: .45; }
 .qris { width: min(100%, 300px); height: auto; border-radius: 16px; box-shadow: var(--shadow); }
 
-/* Tabs: Main and Dukung, fixed at the bottom (hidden inside a worksheet) */
+/* Cari di Gambar: things scattered over a little landscape */
+.scene { position: relative; width: min(100%, 720px); aspect-ratio: 5 / 4; margin: 0 auto; border-radius: 22px; overflow: hidden; box-shadow: var(--shadow);
+  background: linear-gradient(#D4F0FA 0 34%, #C6E8B0 34% 100%); }
+.spot { position: absolute; border: 0; background: none; padding: 3px; border-radius: 50%; font-size: calc(var(--s) * min(9vw, 58px)); transform: rotate(var(--r)); }
+.spot.nope { animation: nope .35s; }
+.spot.found { background: rgba(255,255,255,.85); box-shadow: 0 0 0 4px var(--teal); transform: none; animation: pop .4s; }
+.find-what { display: flex; align-items: center; justify-content: center; gap: 8px; flex-wrap: wrap; }
+.find-what .emoji { font-size: 1.6em; }
+
+/* Belajar: picture cards */
+.topics { display: flex; gap: 8px; overflow-x: auto; margin: 0 -16px 14px; padding: 2px 16px 8px; scrollbar-width: none; }
+.topics::-webkit-scrollbar { display: none; }
+.topics .chip { flex: none; white-space: nowrap; }
+.learn-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; }
+.learn-grid.hitung { grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); }
+.learn-card { display: grid; justify-items: center; align-content: center; gap: 6px; min-height: 150px; padding: 14px 8px; border: 3px solid transparent; border-radius: var(--radius); background: var(--paper); box-shadow: var(--shadow); color: var(--navy); }
+.learn-card.on { border-color: var(--sun); animation: pop .4s; }
+.learn-card .big { font-family: var(--head); font-size: 54px; line-height: 1; color: var(--teal-lo); }
+.learn-grid.hitung .big { font-size: 32px; }
+.learn-emoji { font-size: 64px; }
+.learn-emoji.small { font-size: 34px; }
+.learn-card .name { font-family: var(--head); font-weight: 600; font-size: 20px; text-transform: capitalize; }
+.learn-card .dots { font-size: 13px; line-height: 1.35; text-align: center; }
+.math-art { font-size: 22px; line-height: 1.4; }
+.math-art .gone { opacity: .22; }
+
+/* Tabs: Main, Belajar and Dukung, fixed at the bottom (hidden inside a worksheet) */
 :root { --tabs: 64px; }
 .tabs { display: none; }
 body.has-nav .tabs {
