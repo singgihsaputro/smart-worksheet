@@ -139,7 +139,8 @@ main { max-width: 980px; margin: 0 auto; padding: max(12px, env(safe-area-inset-
 .basket-in .piece .emoji { font-size: 36px; }
 
 /* Puzzle */
-.levels { display: flex; justify-content: center; gap: 8px; margin-bottom: 12px; }
+.levels { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-bottom: 12px; }
+.levels .chip { white-space: nowrap; }
 .puzzle {
   --size: min(88vw, 420px);
   display: grid; grid-template-columns: repeat(var(--n), 1fr); width: var(--size); height: var(--size);
@@ -188,6 +189,33 @@ main { max-width: 980px; margin: 0 auto; padding: max(12px, env(safe-area-inset-
 .memo.flip .back { transform: rotateY(180deg); }
 .memo.flip .front { transform: rotateY(0); }
 .memo.match .front { background: var(--teal-soft); }
+
+/* Levels on the home screen */
+.level { margin: 18px 0 8px; }
+.level-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 10px; margin-bottom: 10px; }
+.level-head h2 { margin: 0; font-size: 21px; font-weight: 600; }
+.level-n { display: inline-block; padding: 2px 10px; border-radius: 999px; background: var(--navy); color: #fff; font-size: 13px; vertical-align: 3px; }
+.level-state { font-size: 13px; font-weight: 900; padding: 5px 12px; border-radius: 999px; background: var(--coral-soft); color: #B65640; }
+.level-state.open { background: var(--teal-soft); color: var(--teal-lo); }
+.level.closed .level-n { background: var(--muted); }
+
+/* Speaking games */
+.prompt { display: grid; place-items: center; min-height: 180px; margin: 0 auto 10px; max-width: 520px; border-radius: var(--radius); background: var(--paper); box-shadow: var(--shadow); }
+.big-text { font-family: var(--head); font-size: clamp(80px, 24vw, 140px); font-weight: 700; color: var(--tint); line-height: 1.1; }
+.big-text.word { font-size: clamp(48px, 13vw, 88px); letter-spacing: 4px; }
+.prompt-emoji { font-size: clamp(96px, 26vw, 150px); }
+.reveal { text-align: center; min-height: 10px; }
+.reveal .big-emoji { font-size: 72px; display: inline-block; animation: pop .45s; }
+.mic {
+  display: grid; place-items: center; width: 120px; height: 120px; margin: 8px auto; border-radius: 50%; border: 0;
+  background: var(--coral); color: #fff; font-size: 52px; box-shadow: 0 8px 0 #C25A44;
+}
+.mic:active { transform: translateY(4px); box-shadow: 0 3px 0 #C25A44; }
+.mic.on { animation: listening 1s ease-in-out infinite; }
+@keyframes listening { 50% { box-shadow: 0 8px 0 #C25A44, 0 0 0 18px rgba(233,120,94,.25); } }
+.status { text-align: center; font-weight: 800; min-height: 24px; margin: 10px 0 4px; }
+.skip { display: block; margin: 0 auto; }
+.skip[hidden] { display: none; }
 
 /* Drawing */
 .stage { position: relative; width: min(100%, 560px); aspect-ratio: 1; margin: 0 auto; border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); }

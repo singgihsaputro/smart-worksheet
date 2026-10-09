@@ -1,10 +1,11 @@
 // The worksheets. Each one builds itself into `area`, calls done({ mistakes })
 // when the child has finished, and returns a cleanup for when they leave early.
 // Stars come from mistakes (app.js): none → 3, one or two → 2, more → 1.
-import { ANIMALS, FRUITS, THINGS, pick, shuffle } from './data.js'
+import { ANIMALS, FRUITS, THINGS, WORDS, pick, shuffle } from './data.js'
 import { h } from './dom.js'
 import { draggable } from './drag.js'
 import { sfx } from './sfx.js'
+import { ALPHABET, canListen, letterWords, listen, numberWords, said } from './voice.js'
 
 const EMOJI_FONT = '"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif'
 const later = (fn, ms) => setTimeout(fn, ms)
@@ -83,15 +84,16 @@ function picture(emoji, size = 600) {
   return c.toDataURL('image/png')
 }
 
-function puzzle(area, done) {
+/** A picture cut into n×n pieces to drag into place. `again()` redraws at a new level. */
+function puzzleBoard(area, done, { src, label, again, extra }) {
   const level = (area.dataset.level ??= '2')
   const n = Number(level)
-  const animal = pick(ANIMALS, 1)[0]
-  const src = picture(animal.emoji)
   const tile = i => `background-image:url(${src});background-size:${n * 100}% ${n * 100}%;background-position:${(i % n) * 100 / (n - 1)}% ${Math.floor(i / n) * 100 / (n - 1)}%`
   const indices = [...Array(n * n).keys()]
   const slots = indices.map(i => h('div', { class: 'slot cell', 'data-i': i }))
   const pieces = shuffle(indices).map(i => h('div', { class: 'piece tile', 'data-i': i, style: tile(i) }))
+  const board = h('div', { class: 'puzzle', style: `--n:${n};--guide:url(${src})` }, slots)
+  const caption = h('p', { class: 'caption' })
   let mistakes = 0, placed = 0
   for (const piece of pieces) {
     draggable(piece, '.cell', (slot, el) => {
@@ -99,18 +101,67 @@ function puzzle(area, done) {
       el.classList.add('placed'); slot.append(el); slot.classList.add('filled'); sfx.good()
       if (++placed === n * n) {
         board.classList.add('complete')
-        caption.textContent = `${animal.emoji} ${animal.name}!`
+        caption.textContent = label
         later(() => done({ mistakes }), 1300)
       }
       return true
     })
   }
-  const board = h('div', { class: 'puzzle', style: `--n:${n};--guide:url(${src})` }, slots)
-  const caption = h('p', { class: 'caption' })
   area.replaceChildren(
-    h('div', { class: 'levels', role: 'group', 'aria-label': 'Tingkat' }, [['2', 'Mudah · 4'], ['3', 'Sedang · 9'], ['4', 'Sulit · 16']].map(([v, label]) =>
-      h('button', { class: `chip${v === level ? ' on' : ''}`, 'aria-pressed': String(v === level), onclick: () => { area.dataset.level = v; puzzle(area, done) } }, label))),
+    h('div', { class: 'levels', role: 'group', 'aria-label': 'Tingkat' }, [['2', 'Mudah · 4'], ['3', 'Sedang · 9'], ['4', 'Sulit · 16']].map(([v, text]) =>
+      h('button', { class: `chip${v === level ? ' on' : ''}`, 'aria-pressed': String(v === level), onclick: () => { area.dataset.level = v; again() } }, text)), extra),
     board, caption, h('div', { class: 'tray tiles', style: `--n:${n}` }, pieces))
+}
+
+function puzzle(area, done) {
+  const animal = pick(ANIMALS, 1)[0]
+  puzzleBoard(area, done, { src: picture(animal.emoji), label: `${animal.emoji} ${animal.name}!`, again: () => puzzle(area, done) })
+}
+
+// ── 4b. Photo puzzle: the child's own photo, which never leaves the device ───
+/** The middle square of a photo, 600 px, as a data URL (EXIF rotation is applied by the browser). */
+async function squarePhoto(file) {
+  const url = URL.createObjectURL(file)
+  try {
+    const img = new Image()
+    img.src = url
+    await img.decode()
+    const side = Math.min(img.naturalWidth, img.naturalHeight)
+    const c = document.createElement('canvas')
+    c.width = c.height = 600
+    c.getContext('2d').drawImage(img, (img.naturalWidth - side) / 2, (img.naturalHeight - side) / 2, side, side, 0, 0, 600, 600)
+    return c.toDataURL('image/jpeg', 0.85)
+  } finally { URL.revokeObjectURL(url) }
+}
+
+function photoPuzzle(area, done) {
+  const saved = (() => { try { return localStorage.getItem('sw.photo') } catch { return null } })()
+  const input = h('input', {
+    type: 'file', accept: 'image/*', hidden: true,
+    async onchange(e) {
+      const file = e.target.files[0]
+      if (!file) return
+      try {
+        const src = await squarePhoto(file)
+        try { localStorage.setItem('sw.photo', src) } catch { /* too big or private mode: still playable now */ }
+        start(src)
+      } catch { area.querySelector('.note')?.replaceChildren('Foto tidak bisa dibuka. Coba foto lain ya.') }
+    },
+  })
+  const choose = label => h('button', { class: 'btn big', onclick: () => input.click() }, label)
+  function start(src) {
+    puzzleBoard(area, done, {
+      src, label: '📸 Fotomu jadi utuh!', again: () => start(src),
+      extra: h('button', { class: 'chip', onclick: () => input.click() }, '🔄 Ganti foto'),
+    })
+    area.append(input)
+  }
+  if (saved) return start(saved)
+  area.replaceChildren(h('div', { class: 'start' },
+    h('div', { class: 'big-emoji' }, '📸'),
+    h('p', {}, 'Pilih foto dari galeri atau ambil foto baru, lalu jadikan puzzle!'),
+    choose('📷 Pilih foto'),
+    h('p', { class: 'note' }, 'Foto tidak diunggah ke mana pun — hanya ada di perangkat ini.')), input)
 }
 
 // ── 5. Guess the sound ───────────────────────────────────────────────────────
@@ -256,13 +307,113 @@ function drawing(area, done) {
   return () => ro.disconnect()
 }
 
+// ── 9–12. Say it: numbers, letters, words, animal names ─────────────────────
+/**
+ * Shared by the speaking games. Each round shows something and accepts some
+ * answers; the child taps the mic and says it. Two misses offer the answer and
+ * a skip. Without speech recognition (or a mic), it's a tap-the-answer game.
+ */
+function speak(area, done, rounds) {
+  let k = 0, mistakes = 0, tapMode = !canListen
+  function round() {
+    const r = rounds[k]
+    let misses = 0, busy = false
+    const status = h('p', { class: 'status', 'aria-live': 'polite' }, tapMode ? 'Ketuk jawaban yang benar.' : 'Ketuk 🎤 lalu ucapkan jawabannya.')
+    const reveal = h('div', { class: 'reveal' })
+    const win = () => {
+      sfx.good()
+      reveal.replaceChildren(r.reveal ?? '')
+      status.textContent = `Benar! ${r.answer} 🎉`
+      area.querySelectorAll('.choice, .mic').forEach(b => { b.disabled = true })
+      later(() => (++k < rounds.length ? round() : done({ mistakes })), 1100)
+    }
+    const miss = text => {
+      mistakes++; misses++; sfx.tryAgain()
+      status.textContent = text
+      if (misses >= 2) area.querySelector('.skip')?.removeAttribute('hidden')
+    }
+    const mic = h('button', {
+      class: 'mic', 'aria-label': 'Ucapkan jawaban',
+      async onclick() {
+        if (busy) return
+        busy = true; mic.classList.add('on')
+        try {
+          const heard = await listen({ onStart: () => { status.textContent = 'Aku mendengarkan… 👂' } })
+          if (said(heard, r.accept, { exact: r.exact })) win()
+          else miss(heard.length ? `Aku dengar "${heard[0]}". Coba lagi ya!` : 'Aku belum dengar. Ucapkan lebih keras ya!')
+        } catch {
+          // No mic permission or no recogniser: carry on by tapping.
+          tapMode = true; round(); return
+        } finally { busy = false; mic.classList.remove('on') }
+        if (misses >= 2) status.textContent += ` Jawabannya: ${r.answer}.`
+      },
+    }, '🎤')
+    const choices = h('div', { class: 'choices' }, shuffle(r.choices).map(c => h('button', {
+      class: 'choice',
+      onclick(e) { if (c === r.answer) { e.currentTarget.classList.add('right'); win() } else { e.currentTarget.classList.add('wrong'); e.currentTarget.disabled = true; miss('Coba lagi ya!') } },
+    }, h('b', {}, c))))
+    area.replaceChildren(
+      h('p', { class: 'progress-dots' }, rounds.map((_, i) => h('i', { class: i < k ? 'on' : i === k ? 'now' : '' }))),
+      h('div', { class: 'prompt' }, r.show), reveal,
+      tapMode ? choices : mic, status,
+      h('button', { class: 'link-btn skip', hidden: true, onclick: () => { ++k < rounds.length ? round() : done({ mistakes }) } }, 'Lewati →'))
+  }
+  round()
+}
+
+const near = (n, max) => shuffle([...Array(max).keys()].map(i => i + 1).filter(x => x !== n && Math.abs(x - n) <= 3)).slice(0, 2)
+
+function sayNumber(area, done) {
+  speak(area, done, Array.from({ length: 5 }, (_, i) => {
+    const max = i < 3 ? 10 : 20
+    const n = 1 + Math.floor(Math.random() * max)
+    return { show: h('span', { class: 'big-text' }, String(n)), accept: numberWords(n), exact: true, answer: String(n), choices: [n, ...near(n, max)].map(String) }
+  }))
+}
+
+function sayLetter(area, done) {
+  speak(area, done, pick(ALPHABET, 5).map(letter => ({
+    show: h('span', { class: 'big-text' }, `${letter}${letter.toLowerCase()}`), accept: letterWords(letter), exact: true, answer: letter,
+    choices: [letter, ...pick(ALPHABET.filter(l => l !== letter), 2)],
+  })))
+}
+
+function sayWord(area, done) {
+  speak(area, done, pick(WORDS, 5).map(w => ({
+    show: h('span', { class: 'big-text word' }, w.word), accept: [w.word], answer: w.word,
+    reveal: h('span', { class: 'emoji big-emoji' }, w.emoji),
+    choices: [w.word, ...pick(WORDS.filter(x => x.word !== w.word), 2).map(x => x.word)],
+  })))
+}
+
+function sayAnimal(area, done) {
+  speak(area, done, pick(ANIMALS, 5).map(a => ({
+    show: h('span', { class: 'emoji prompt-emoji' }, a.emoji), accept: [a.name, ...(a.also ?? [])], answer: a.name,
+    choices: [a.name, ...pick(ANIMALS.filter(x => x.id !== a.id), 2).map(x => x.name)],
+  })))
+}
+
+/** Levels: each opens once a child has collected enough stars (saved per account). */
+export const GROUPS = [
+  { id: 'start', title: 'Ayo Mulai', emoji: '🐣', need: 0 },
+  { id: 'match', title: 'Pintar Mencocokkan', emoji: '🧩', need: 5 },
+  { id: 'create', title: 'Kreasi & Suara', emoji: '🎨', need: 12 },
+  { id: 'talk', title: 'Ayo Bicara', emoji: '🎤', need: 20 },
+  { id: 'read', title: 'Huruf & Kata', emoji: '🔤', need: 28 },
+]
+
 export const SHEETS = [
-  { id: 'shadow', free: true, title: 'Cari Bayangan', emoji: '🦒', color: 'teal', blurb: 'Cocokkan hewan dengan bayangannya', how: 'Geser setiap hewan ke bayangannya yang pas.', start: shadows },
-  { id: 'food', free: true, title: 'Makanan Hewan', emoji: '🐰', color: 'coral', blurb: 'Siapa makan apa?', how: 'Geser makanan ke hewan yang memakannya.', start: food },
-  { id: 'puzzle', title: 'Puzzle Gambar', emoji: '🧩', color: 'sun', blurb: 'Susun potongan jadi gambar utuh', how: 'Geser potongan ke tempat yang benar.', start: puzzle },
-  { id: 'sound', title: 'Tebak Suara', emoji: '🔊', color: 'sky', blurb: 'Hewan apa yang bersuara?', how: 'Dengarkan suaranya, lalu ketuk hewan yang benar.', start: sounds },
-  { id: 'draw', title: 'Mewarnai', emoji: '🖍️', color: 'coral', blurb: 'Gambar dan warnai hewan', how: 'Pilih warna, lalu gambar di atas hewan.', start: drawing },
-  { id: 'count', free: true, title: 'Ayo Berhitung', emoji: '🍎', color: 'sun', blurb: 'Hitung buahnya', how: 'Hitung buahnya, lalu ketuk angka yang benar.', start: counting },
-  { id: 'sort', title: 'Kelompokkan', emoji: '🧺', color: 'teal', blurb: 'Hewan, buah, atau benda?', how: 'Geser setiap gambar ke keranjang yang benar.', start: sorting },
-  { id: 'memory', title: 'Kartu Ingatan', emoji: '🃏', color: 'sky', blurb: 'Temukan pasangan kartu', how: 'Buka dua kartu. Cari yang gambarnya sama!', start: memory },
+  { id: 'shadow', group: 'start', title: 'Cari Bayangan', emoji: '🦒', color: 'teal', blurb: 'Cocokkan hewan dengan bayangannya', how: 'Geser setiap hewan ke bayangannya yang pas.', start: shadows },
+  { id: 'food', group: 'start', title: 'Makanan Hewan', emoji: '🐰', color: 'coral', blurb: 'Siapa makan apa?', how: 'Geser makanan ke hewan yang memakannya.', start: food },
+  { id: 'puzzle', group: 'match', title: 'Puzzle Gambar', emoji: '🧩', color: 'sun', blurb: 'Susun potongan jadi gambar utuh', how: 'Geser potongan ke tempat yang benar.', start: puzzle },
+  { id: 'sound', group: 'create', title: 'Tebak Suara', emoji: '🔊', color: 'sky', blurb: 'Hewan apa yang bersuara?', how: 'Dengarkan suaranya, lalu ketuk hewan yang benar.', start: sounds },
+  { id: 'draw', group: 'create', title: 'Mewarnai', emoji: '🖍️', color: 'coral', blurb: 'Gambar dan warnai hewan', how: 'Pilih warna, lalu gambar di atas hewan.', start: drawing },
+  { id: 'count', group: 'start', title: 'Ayo Berhitung', emoji: '🍎', color: 'sun', blurb: 'Hitung buahnya', how: 'Hitung buahnya, lalu ketuk angka yang benar.', start: counting },
+  { id: 'sort', group: 'match', title: 'Kelompokkan', emoji: '🧺', color: 'teal', blurb: 'Hewan, buah, atau benda?', how: 'Geser setiap gambar ke keranjang yang benar.', start: sorting },
+  { id: 'photo', group: 'create', title: 'Puzzle Fotoku', emoji: '📸', color: 'coral', blurb: 'Puzzle dari fotomu sendiri', how: 'Pilih foto, lalu susun potongannya.', start: photoPuzzle },
+  { id: 'say-animal', group: 'talk', title: 'Tebak Nama Hewan', emoji: '🐼', color: 'teal', blurb: 'Sebutkan nama hewannya', how: 'Ketuk 🎤 lalu sebutkan nama hewan di gambar.', start: sayAnimal },
+  { id: 'say-number', group: 'talk', title: 'Tebak Angka', emoji: '🔢', color: 'sun', blurb: 'Sebutkan angkanya', how: 'Ketuk 🎤 lalu sebutkan angka yang tampil.', start: sayNumber },
+  { id: 'say-letter', group: 'read', title: 'Tebak Huruf', emoji: '🔤', color: 'sky', blurb: 'Sebutkan hurufnya', how: 'Ketuk 🎤 lalu sebutkan huruf yang tampil.', start: sayLetter },
+  { id: 'say-word', group: 'read', title: 'Tebak Kata', emoji: '📖', color: 'coral', blurb: 'Baca katanya keras-keras', how: 'Ketuk 🎤 lalu baca kata yang tampil.', start: sayWord },
+  { id: 'memory', group: 'match', title: 'Kartu Ingatan', emoji: '🃏', color: 'sky', blurb: 'Temukan pasangan kartu', how: 'Buka dua kartu. Cari yang gambarnya sama!', start: memory },
 ]

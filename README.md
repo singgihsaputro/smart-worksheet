@@ -3,19 +3,22 @@
 Playful learning sheets for kids, right in the browser — phone, tablet, iPad or
 laptop, and installable to the home screen. *Belajar sambil bermain.*
 
-| Sheet | What the child does |
-|---|---|
-| Cari Bayangan | drags each animal onto its shadow |
-| Makanan Hewan | drags each food to the animal that eats it |
-| Puzzle Gambar | rebuilds a picture from 4, 9 or 16 pieces |
-| Tebak Suara | hears an animal and taps the right one |
-| Mewarnai | draws and colours over a faint animal, and can save it |
-| Ayo Berhitung | counts fruit and taps the number |
-| Kelompokkan | sorts animals, fruit and things into baskets |
-| Kartu Ingatan | flips cards to find the pairs |
+Thirteen worksheets in five levels. Level 1 is open to everyone; each next
+level needs a signed-in (Google) account with enough stars — stars are kept per
+account and synced, so every child's progress is their own.
 
-Stars (fewer mistakes, more stars) are kept per worksheet. Signing in with Google
-keeps them across devices; everything works without signing in.
+| Level (stars needed) | Sheets |
+|---|---|
+| 1 · Ayo Mulai (free) | Cari Bayangan (shadows), Makanan Hewan (animal food), Ayo Berhitung (counting) |
+| 2 · Pintar Mencocokkan (5★) | Puzzle Gambar (4/9/16 pieces), Kelompokkan (sort into baskets), Kartu Ingatan (memory) |
+| 3 · Kreasi & Suara (12★) | Tebak Suara (animal sounds), Mewarnai (colouring), Puzzle Fotoku (puzzle from your own photo — it never leaves the device) |
+| 4 · Ayo Bicara (20★) | Tebak Nama Hewan, Tebak Angka — say it (speech recognition, Indonesian) |
+| 5 · Huruf & Kata (28★) | Tebak Huruf, Tebak Kata — say the letter / read the word aloud |
+
+Speaking games use the browser's speech recognition (`voice.js`); without it
+(e.g. Firefox, or no mic permission) they become tap-the-answer games.
+Stars: no mistakes 3, one or two 2, more 1. `/analytics` is the owner's
+dashboard (emails in `ADMIN_EMAILS`).
 
 ## Stack
 

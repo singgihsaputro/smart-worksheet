@@ -4,7 +4,7 @@
 const CACHE = 'smart-worksheet'
 
 // Saved up front so the worksheets open offline. Sounds are cached as they play.
-const CORE = ['/', '/app.js', '/dom.js', '/drag.js', '/data.js', '/sheets.js', '/sfx.js', '/style.css',
+const CORE = ['/', '/app.js', '/dom.js', '/drag.js', '/data.js', '/sheets.js', '/sfx.js', '/voice.js', '/style.css',
   '/manifest.webmanifest', '/icon-192.png', '/apple-touch-icon.png', '/brand/childplay-logo-icon.svg',
   '/brand/childplay-logo-horizontal.svg']
 

@@ -5,27 +5,27 @@ export const ANIMALS = [
   { id: 'cat', emoji: '🐱', name: 'Kucing', food: '🐟', foodName: 'Ikan', sound: 'cat' },
   { id: 'dog', emoji: '🐶', name: 'Anjing', food: '🦴', foodName: 'Tulang', sound: 'dog' },
   { id: 'cow', emoji: '🐮', name: 'Sapi', food: '🌿', foodName: 'Rumput', sound: 'cow' },
-  { id: 'rooster', emoji: '🐓', name: 'Ayam Jago', food: '🌽', foodName: 'Jagung', sound: 'rooster' },
-  { id: 'duck', emoji: '🦆', name: 'Bebek', sound: 'duck' },
-  { id: 'sheep', emoji: '🐑', name: 'Domba', sound: 'sheep' },
+  { id: 'rooster', emoji: '🐓', name: 'Ayam Jago', also: ['ayam'], food: '🌽', foodName: 'Jagung', sound: 'rooster' },
+  { id: 'duck', emoji: '🦆', name: 'Bebek', also: ['itik'], sound: 'duck' },
+  { id: 'sheep', emoji: '🐑', name: 'Domba', also: ['biri biri'], sound: 'sheep' },
   { id: 'horse', emoji: '🐴', name: 'Kuda', food: '🥕', foodName: 'Wortel', sound: 'horse' },
-  { id: 'frog', emoji: '🐸', name: 'Katak', sound: 'frog' },
+  { id: 'frog', emoji: '🐸', name: 'Katak', also: ['kodok'], sound: 'frog' },
   { id: 'goat', emoji: '🐐', name: 'Kambing', sound: 'goat' },
   { id: 'owl', emoji: '🦉', name: 'Burung Hantu', sound: 'owl' },
   { id: 'bee', emoji: '🐝', name: 'Lebah', food: '🌻', foodName: 'Bunga', sound: 'bee' },
   { id: 'bird', emoji: '🐦', name: 'Burung', food: '🐛', foodName: 'Ulat', sound: 'bird' },
   { id: 'elephant', emoji: '🐘', name: 'Gajah', sound: 'elephant' },
   { id: 'rabbit', emoji: '🐰', name: 'Kelinci', food: '🥕', foodName: 'Wortel' },
-  { id: 'monkey', emoji: '🐵', name: 'Monyet', food: '🍌', foodName: 'Pisang' },
+  { id: 'monkey', emoji: '🐵', name: 'Monyet', also: ['kera'], food: '🍌', foodName: 'Pisang' },
   { id: 'mouse', emoji: '🐭', name: 'Tikus', food: '🧀', foodName: 'Keju' },
   { id: 'panda', emoji: '🐼', name: 'Panda', food: '🎋', foodName: 'Bambu' },
   { id: 'squirrel', emoji: '🐿️', name: 'Tupai', food: '🌰', foodName: 'Kacang' },
   { id: 'lion', emoji: '🦁', name: 'Singa', food: '🍖', foodName: 'Daging' },
-  { id: 'turtle', emoji: '🐢', name: 'Kura-kura' },
+  { id: 'turtle', emoji: '🐢', name: 'Kura-kura', also: ['kurakura'] },
   { id: 'giraffe', emoji: '🦒', name: 'Jerapah' },
-  { id: 'penguin', emoji: '🐧', name: 'Penguin' },
+  { id: 'penguin', emoji: '🐧', name: 'Penguin', also: ['pinguin'] },
   { id: 'fish', emoji: '🐠', name: 'Ikan' },
-  { id: 'butterfly', emoji: '🦋', name: 'Kupu-kupu' },
+  { id: 'butterfly', emoji: '🦋', name: 'Kupu-kupu', also: ['kupukupu'] },
   { id: 'crab', emoji: '🦀', name: 'Kepiting' },
 ]
 
@@ -45,6 +45,15 @@ export const THINGS = [
   { id: 'umbrella', emoji: '☂️', name: 'Payung' }, { id: 'shoe', emoji: '👟', name: 'Sepatu' },
   { id: 'balloon', emoji: '🎈', name: 'Balon' }, { id: 'clock', emoji: '⏰', name: 'Jam' },
   { id: 'book', emoji: '📚', name: 'Buku' }, { id: 'kite', emoji: '🪁', name: 'Layang-layang' },
+]
+
+// Short, everyday words for "Tebak Kata": read it aloud, and the picture appears.
+export const WORDS = [
+  { word: 'BOLA', emoji: '⚽' }, { word: 'APEL', emoji: '🍎' }, { word: 'IKAN', emoji: '🐟' }, { word: 'BUKU', emoji: '📚' },
+  { word: 'KUDA', emoji: '🐴' }, { word: 'SAPI', emoji: '🐮' }, { word: 'RUMAH', emoji: '🏠' }, { word: 'MOBIL', emoji: '🚗' },
+  { word: 'BULAN', emoji: '🌙' }, { word: 'BINTANG', emoji: '⭐' }, { word: 'PISANG', emoji: '🍌' }, { word: 'KUCING', emoji: '🐱' },
+  { word: 'TOPI', emoji: '🎩' }, { word: 'SUSU', emoji: '🥛' }, { word: 'ROTI', emoji: '🍞' }, { word: 'JERUK', emoji: '🍊' },
+  { word: 'BUNGA', emoji: '🌸' }, { word: 'PAYUNG', emoji: '☂️' }, { word: 'SEPATU', emoji: '👟' }, { word: 'BALON', emoji: '🎈' },
 ]
 
 /** Fisher–Yates; returns a new array. */
