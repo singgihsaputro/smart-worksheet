@@ -14,6 +14,7 @@ const me = await import('../api/me.js')
 const progress = await import('../api/progress.js')
 const play = await import('../api/play.js')
 const handoff = await import('../api/handoff.js')
+const analytics = await import('../api/analytics.js')
 
 const { publicKey, privateKey } = await generateKeyPair('RS256')
 google.keys = createLocalJWKSet({ keys: [{ ...(await exportJWK(publicKey)), kid: 'k', alg: 'RS256' }] })
@@ -81,4 +82,20 @@ test('a parent can delete the account and all its data', async () => {
   ])
   assert.deepEqual(left.map(r => Number(r.rows[0].n)), [0, 0, 0])
   assert.equal((await (await me.GET(req('GET', null, cookie))).json()).user, null)
+})
+
+test('the dashboard answers only the owner', async () => {
+  process.env.ADMIN_EMAILS = 'Owner@Example.com'
+  const owner = cookieOf(await auth.POST(req('POST', { credential: await idToken({ email: 'owner@example.com' }, 'google-owner') })))
+  const someone = cookieOf(await auth.POST(req('POST', { credential: await idToken({ email: 'someone@example.com' }, 'google-someone') })))
+  assert.equal((await analytics.GET(req('GET'))).status, 401)
+  assert.equal((await analytics.GET(req('GET', null, someone))).status, 403)
+  await play.POST(req('POST', { sheet: 'count', stars: 2, mistakes: 1, device: 'dash-device-1' }))
+  const res = await analytics.GET(req('GET', null, owner))
+  assert.equal(res.status, 200)
+  const data = await res.json()
+  assert.ok(data.totals.accounts >= 2 && data.totals.plays_7d >= 1)
+  assert.ok(data.sheets.some(s => s.sheet === 'count' && s.plays >= 1))
+  assert.ok(data.logins.some(l => l.email === 'someone@example.com'))
+  assert.ok(data.daily.length >= 1)
 })

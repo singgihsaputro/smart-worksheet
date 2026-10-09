@@ -84,6 +84,10 @@ main { max-width: 980px; margin: 0 auto; padding: max(12px, env(safe-area-inset-
 .tint-sun { --tint: #D9A21B; --tint-soft: var(--sun-soft); }
 .tint-sky { --tint: #3E9DB4; --tint-soft: var(--sky-soft); }
 .card:hover { border-color: var(--tint-soft); }
+.card-art { position: relative; }
+.card.locked .card-art { filter: grayscale(.55); opacity: .75; }
+.lock { position: absolute; right: 8px; bottom: 6px; font-size: 22px; font-style: normal; filter: none; }
+.card-lock { margin-top: 4px; font-size: 13px; font-weight: 900; color: var(--coral); }
 .foot { text-align: center; margin-top: 30px; color: var(--muted); font-size: 12px; font-weight: 700; }
 .foot img { width: min(240px, 60vw); display: block; margin: 0 auto 6px; }
 

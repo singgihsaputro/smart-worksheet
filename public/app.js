@@ -187,15 +187,23 @@ function sheetDialog(...children) {
   if (!dialog.open) dialog.showModal()
 }
 
-function accountDialog() {
-  sheetDialog(user
-    ? [h('div', { class: 'big-emoji' }, '🙌'), h('h2', {}, `Halo, ${user.name ?? 'teman'}!`),
-       h('p', {}, `Masuk sebagai ${user.email}. Bintang tersimpan di akunmu, bisa dilanjutkan di perangkat mana pun.`),
-       h('button', { class: 'btn ghost', onclick: signOut }, 'Keluar'),
-       h('button', { class: 'link-btn', onclick: deleteAccount }, 'Hapus akun & datanya')]
-    : [h('div', { class: 'big-emoji' }, '⭐'), h('h2', {}, 'Simpan bintangmu'),
-       h('p', {}, 'Masuk dengan Google supaya bintang tersimpan dan bisa dilanjutkan di HP, tablet, atau laptop lain. Semua lembar kerja tetap bisa dimainkan tanpa masuk.'),
-       googleButton(), h('p', { class: 'note' }, 'Minta orang tua untuk masuk ya. ', h('a', { href: '/privacy' }, 'Kebijakan Privasi'))])
+/** Signed in, or (for the free sheets) not needed. */
+const open = sheet => sheet.free || !!user
+
+function accountDialog(locked) {
+  if (user) {
+    return sheetDialog(h('div', { class: 'big-emoji' }, '🙌'), h('h2', {}, `Halo, ${user.name ?? 'teman'}!`),
+      h('p', {}, `Masuk sebagai ${user.email}. Semua lembar kerja terbuka, dan bintang tersimpan di akunmu di perangkat mana pun.`),
+      h('button', { class: 'btn ghost', onclick: signOut }, 'Keluar'),
+      h('button', { class: 'link-btn', onclick: deleteAccount }, 'Hapus akun & datanya'))
+  }
+  const intro = locked
+    ? [h('div', { class: 'big-emoji' }, '🔒'), h('h2', {}, `Buka "${locked.title}"`),
+       h('p', {}, `Cari Bayangan, Makanan Hewan, dan Ayo Berhitung bisa dimainkan langsung. Masuk dengan Google untuk membuka ${SHEETS.filter(s => !s.free).length} lembar lainnya dan menyimpan bintang di semua perangkat.`)]
+    : [h('div', { class: 'big-emoji' }, '⭐'), h('h2', {}, 'Buka semua lembar kerja'),
+       h('p', {}, 'Masuk dengan Google untuk membuka semua lembar kerja dan menyimpan bintang di HP, tablet, atau laptop lain.')]
+  sheetDialog(...intro, googleButton(),
+    h('p', { class: 'note' }, 'Minta orang tua untuk masuk ya. ', h('a', { href: '/privacy' }, 'Kebijakan Privasi')))
 }
 
 // ── Screens ─────────────────────────────────────────────────────────────────
@@ -219,15 +227,20 @@ function homeScreen() {
     h('section', { class: 'hero' },
       h('h1', {}, 'Mau belajar apa hari ini?'),
       h('p', {}, 'Belajar sambil bermain: geser, cocokkan, dengarkan, dan warnai!')),
-    h('div', { class: 'cards' }, SHEETS.map(sheet => h('a', { class: `card tint-${sheet.color}`, href: `#/sheet/${sheet.id}` },
-      h('span', { class: 'card-art', 'aria-hidden': 'true' }, sheet.emoji),
+    h('div', { class: 'cards' }, SHEETS.map(sheet => h('a', {
+      class: `card tint-${sheet.color}${open(sheet) ? '' : ' locked'}`, href: `#/sheet/${sheet.id}`,
+      onclick: e => { if (!open(sheet)) { e.preventDefault(); accountDialog(sheet) } },
+    },
+      h('span', { class: 'card-art', 'aria-hidden': 'true' }, sheet.emoji, open(sheet) ? null : h('i', { class: 'lock' }, '🔒')),
       h('b', {}, sheet.title),
       h('small', {}, sheet.blurb),
-      h('span', { class: 'card-stars', 'aria-label': `${best[sheet.id] ?? 0} dari 3 bintang` },
-        [1, 2, 3].map(n => h('i', { class: n <= (best[sheet.id] ?? 0) ? 'on' : '' }, '★')))))),
+      open(sheet)
+        ? h('span', { class: 'card-stars', 'aria-label': `${best[sheet.id] ?? 0} dari 3 bintang` },
+            [1, 2, 3].map(n => h('i', { class: n <= (best[sheet.id] ?? 0) ? 'on' : '' }, '★')))
+        : h('span', { class: 'card-lock' }, 'Masuk untuk membuka')))),
     h('footer', { class: 'foot' },
       h('img', { src: 'brand/childplay-logo-horizontal.svg', alt: 'childplay — belajar sambil bermain' }),
-      h('p', {}, 'Gratis, tanpa iklan. Suara hewan: rekaman CC0 dari BigSoundBank & Wikimedia Commons.'))))
+      h('p', {}, 'Tanpa iklan. Suara hewan: rekaman CC0 dari BigSoundBank & Wikimedia Commons.'))))
   return () => {}
 }
 
@@ -276,6 +289,12 @@ function route() {
   leave = () => {}
   const [, page, id] = location.hash.split('/')
   const sheet = page === 'sheet' && SHEETS.find(s => s.id === id)
+  if (sheet && !open(sheet)) {
+    // Until we know whether someone is signed in, wait rather than bounce them.
+    if (!accountKnown) { $app.replaceChildren(h('p', { class: 'loading' }, h('img', { src: 'brand/childplay-logo-icon.svg', alt: '', width: 72, height: 72 }))); return }
+    location.replace('#/')
+    return accountDialog(sheet)
+  }
   leave = sheet ? sheetScreen(sheet) : page === 'signin' ? signinScreen(id) : homeScreen()
   window.scrollTo(0, 0)
 }
@@ -286,6 +305,7 @@ document.addEventListener('click', e => { if (e.target.closest('button, a.btn, a
 
 // ── Start ───────────────────────────────────────────────────────────────────
 
+let accountKnown = false
 route()
 // The account is optional: offline, the app goes on with the last account on this device.
 Promise.all([api('GET', '/api/config'), api('GET', '/api/me')])
@@ -298,4 +318,8 @@ Promise.all([api('GET', '/api/config'), api('GET', '/api/me')])
     const saved = store.get('account')
     if (saved) { user = saved; useAccount(saved.email.toLowerCase()); route() }
   })
-  .finally(() => { if (!user && store.get('handoff')) awaitHandoff() })
+  .finally(() => {
+    accountKnown = true
+    if (location.hash.startsWith('#/sheet/') && !document.querySelector('.play')) route() // was waiting on a locked sheet
+    if (!user && store.get('handoff')) awaitHandoff()
+  })

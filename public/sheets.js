@@ -257,12 +257,12 @@ function drawing(area, done) {
 }
 
 export const SHEETS = [
-  { id: 'shadow', title: 'Cari Bayangan', emoji: '🦒', color: 'teal', blurb: 'Cocokkan hewan dengan bayangannya', how: 'Geser setiap hewan ke bayangannya yang pas.', start: shadows },
-  { id: 'food', title: 'Makanan Hewan', emoji: '🐰', color: 'coral', blurb: 'Siapa makan apa?', how: 'Geser makanan ke hewan yang memakannya.', start: food },
+  { id: 'shadow', free: true, title: 'Cari Bayangan', emoji: '🦒', color: 'teal', blurb: 'Cocokkan hewan dengan bayangannya', how: 'Geser setiap hewan ke bayangannya yang pas.', start: shadows },
+  { id: 'food', free: true, title: 'Makanan Hewan', emoji: '🐰', color: 'coral', blurb: 'Siapa makan apa?', how: 'Geser makanan ke hewan yang memakannya.', start: food },
   { id: 'puzzle', title: 'Puzzle Gambar', emoji: '🧩', color: 'sun', blurb: 'Susun potongan jadi gambar utuh', how: 'Geser potongan ke tempat yang benar.', start: puzzle },
   { id: 'sound', title: 'Tebak Suara', emoji: '🔊', color: 'sky', blurb: 'Hewan apa yang bersuara?', how: 'Dengarkan suaranya, lalu ketuk hewan yang benar.', start: sounds },
   { id: 'draw', title: 'Mewarnai', emoji: '🖍️', color: 'coral', blurb: 'Gambar dan warnai hewan', how: 'Pilih warna, lalu gambar di atas hewan.', start: drawing },
-  { id: 'count', title: 'Ayo Berhitung', emoji: '🍎', color: 'sun', blurb: 'Hitung buahnya', how: 'Hitung buahnya, lalu ketuk angka yang benar.', start: counting },
+  { id: 'count', free: true, title: 'Ayo Berhitung', emoji: '🍎', color: 'sun', blurb: 'Hitung buahnya', how: 'Hitung buahnya, lalu ketuk angka yang benar.', start: counting },
   { id: 'sort', title: 'Kelompokkan', emoji: '🧺', color: 'teal', blurb: 'Hewan, buah, atau benda?', how: 'Geser setiap gambar ke keranjang yang benar.', start: sorting },
   { id: 'memory', title: 'Kartu Ingatan', emoji: '🃏', color: 'sky', blurb: 'Temukan pasangan kartu', how: 'Buka dua kartu. Cari yang gambarnya sama!', start: memory },
 ]

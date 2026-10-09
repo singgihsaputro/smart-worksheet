@@ -109,6 +109,15 @@ export async function signInByEmail(email, { googleId, name = null, picture = nu
   return { id, user: { email: user.email, name: user.name ?? null, picture: user.picture ?? null } }
 }
 
+/** Whether this user id belongs to an email in ADMIN_EMAILS (comma-separated). */
+export async function isAdmin(userId) {
+  if (!userId) return false
+  const admins = (process.env.ADMIN_EMAILS ?? '').split(',').map(e => e.trim().toLowerCase()).filter(Boolean)
+  if (!admins.length) return false
+  const { rows } = await db.execute({ sql: 'SELECT email FROM users WHERE id = ?', args: [userId] })
+  return rows.length > 0 && admins.includes(String(rows[0].email).toLowerCase())
+}
+
 export const json = (data, init) => Response.json(data, init)
 
 export async function body(request) {
