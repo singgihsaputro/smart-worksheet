@@ -3,7 +3,10 @@
 Playful learning sheets for kids, right in the browser — phone, tablet, iPad or
 laptop, and installable to the home screen. *Belajar sambil bermain.*
 
-Thirteen worksheets in five levels. Level 1 is open to everyone; each next
+**Live at [ayokmain.my.id](https://ayokmain.my.id)** · free, no ads ·
+open source, and contributions are welcome (see [Contributing](#contributing)).
+
+Nineteen worksheets in five levels. Level 1 is open to everyone; each next
 level needs a signed-in (Google) account with enough stars — stars are kept per
 account and synced, so every child's progress is their own.
 
@@ -33,8 +36,10 @@ Same shape as Ayok Ngaji: no build step.
   pointer-event drag and drop for finger, pen and mouse, `data.js` content), a
   service worker for offline use, and a web app manifest.
 - `api/` — Vercel functions: `auth` (Google ID token → session cookie; also the
-  iPhone home-screen sign-in through Safari with `handoff`), `me`, `progress`
-  (best stars, only ever up), `play` (finished sheets), `config`.
+  iPhone home-screen sign-in through Safari with `handoff`), `me` (account, and
+  deleting it), `progress` (best stars, only ever up), `play` (finished sheets),
+  `rating` and `event` (reviews and taps from the Dukung tab), `analytics` (the
+  owner's dashboard), `config`.
 - Turso (libSQL) for users, stars and plays. Tables are created idempotently in
   `api/_lib.js` — the production database is only ever added to, never reset.
 
@@ -65,3 +70,31 @@ npm test
     horse (s0863), frog (s0819), goat (s1380), owl (s1763), bee (s1000), bird (s3496).
   - Elephant: [Elephant voice - trumpeting.ogg](https://commons.wikimedia.org/wiki/File:Elephant_voice_-_trumpeting.ogg), Wikimedia Commons, CC0.
 - Game sound effects are synthesised in the browser (`sfx.js`).
+
+## Contributing
+
+Contributions are very welcome: new worksheets, better Indonesian content,
+accessibility fixes, bug reports, or ideas from parents and teachers.
+
+- **Ideas and bugs:** open an [issue](https://github.com/singgihsaputro/smart-worksheet/issues).
+  Screenshots and the phone/browser you used help a lot.
+- **Code:** fork, make a branch, run `npm run dev` and `npm test`, then open a
+  pull request that says what changed and how you checked it.
+- **A new worksheet** is one function in `public/sheets.js` that builds itself
+  into `area` and calls `done({ mistakes })`, plus an entry in `SHEETS`; content
+  lists live in `public/data.js`.
+- Keep it simple: plain ES modules, no build step, no new dependencies unless
+  there is no small alternative.
+- Keep it safe for children: no ads, no trackers, nothing that collects more
+  than the [Privacy Policy](https://ayokmain.my.id/privacy) says.
+- **The database is additive only.** Schema changes go in `ready()` in
+  `api/_lib.js` as `CREATE … IF NOT EXISTS` (or a new column with a default);
+  never drop or reset anything, because real children's progress is in it.
+
+## License
+
+The code is [MIT](LICENSE). Not covered by it: the childplay name and logos
+(`public/brand/`), which belong to childplay; the donation QR code
+(`public/qris.jpg`), which is for this site only; and the animal sounds, which
+keep their own licences (listed under [Assets](#assets)).
+
