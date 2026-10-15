@@ -331,3 +331,47 @@ dialog.sheet::backdrop { background: rgba(36, 52, 71, .35); }
   .tray.tiles .piece { width: calc(min(60vw, 480px) / var(--n) * .62); height: calc(min(60vw, 480px) / var(--n) * .62); }
 }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+
+/* Level map: each sheet's levels as a winding path */
+.route { position: relative; margin: 6px auto 28px; }
+.route-line { position: absolute; inset: 0; width: 100%; height: 100%; }
+.route-line path { fill: none; stroke: var(--tint, var(--teal)); stroke-width: 6; stroke-linecap: round; stroke-dasharray: 2 14; opacity: .5; }
+.node { position: absolute; width: 74px; display: grid; justify-items: center; gap: 3px; border: 0; background: none; padding: 0; font: inherit; color: inherit; cursor: pointer; }
+.node .dot { width: 74px; height: 74px; border-radius: 50%; display: grid; place-items: center; background: var(--paper); border: 4px solid var(--tint, var(--teal));
+  font-family: var(--head); font-weight: 700; font-size: 28px; color: var(--navy); box-shadow: 0 5px 0 rgba(36, 52, 71, .12); }
+.node.done .dot { background: var(--tint, var(--teal)); color: #fff; }
+.node.next .dot { background: var(--sun); border-color: #E0A82E; color: var(--navy); animation: breathe 1.6s ease-in-out infinite; }
+.node.locked .dot { background: #F1EEE8; border-color: var(--line); color: #B8B2A6; font-size: 24px; box-shadow: none; }
+.node .st { font-size: 15px; letter-spacing: 1px; color: var(--line); line-height: 1; }
+.node .st .on { color: var(--sun); }
+.node.nope { animation: nope .35s; }
+.route-sum { margin: 4px 0 0; font-weight: 900; font-size: 14px; color: var(--muted); }
+.route-status { text-align: center; min-height: 1.4em; font-weight: 800; color: var(--coral); margin: 0 0 4px; }
+
+/* Home cards: how many levels are done */
+.card-progress { display: flex; align-items: center; gap: 8px; margin-top: 6px; font-size: 13px; font-weight: 900; color: var(--muted); }
+.card-progress .bar { flex: 1; height: 8px; border-radius: 99px; background: var(--line); overflow: hidden; }
+.card-progress .bar i { display: block; height: 100%; width: calc(var(--p) * 100%); background: var(--sun); border-radius: 99px; }
+
+/* Language switcher */
+.pill.lang { border: 0; font: inherit; font-weight: 900; color: var(--navy); cursor: pointer; }
+
+/* Small phones: the top bar holds brand, language, stars and account */
+@media (max-width: 420px) {
+  .top { gap: 6px; }
+  .brand { gap: 7px; min-width: 0; }
+  .brand img { width: 38px; height: 38px; }
+  .brand b { font-size: 17px; }
+  .brand small { font-size: 11px; }
+  .top .pill { padding: 7px 10px; font-size: 14px; }
+}
+
+/* Five or more drop places: three across, so the board fits on a phone while dragging */
+.board.many { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.board.many .slot { min-height: 112px; padding: 8px 4px; }
+.board.many .slot > .emoji { font-size: 46px; }
+.board.many .slot small { font-size: 14px; }
+.board.many .plate { font-size: 32px; }
+.tray.many { margin-top: 12px; gap: 8px; padding: 10px; }
+.tray.many .piece { width: 74px; height: 74px; }
+.tray.many .piece .emoji { font-size: 44px; }

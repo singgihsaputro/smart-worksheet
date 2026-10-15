@@ -1,20 +1,21 @@
 // Listening for a child's answer with the browser's speech recognition
-// (Chrome, Safari, Edge). The browser's own service turns speech into text;
-// nothing is recorded or stored here. Where it's missing (e.g. Firefox), the
-// voice games fall back to tapping the answer.
+// (Chrome, Safari, Edge), in Indonesian or English. The browser's own service
+// turns speech into text; nothing is recorded or stored here. Where it's
+// missing (e.g. Firefox), the voice games fall back to tapping the answer.
+import { lang, speechLang } from './i18n.js'
 
 const Recognition = typeof window !== 'undefined' && (window.SpeechRecognition || window.webkitSpeechRecognition)
 export const canListen = !!Recognition
 
 /**
- * Listens once (one utterance, Indonesian) and resolves with what was heard:
+ * Listens once (one utterance, in the app's language) and resolves with what was heard:
  * every alternative the recogniser offers, best first. Resolves [] on silence;
  * rejects with the browser's error code when listening isn't possible.
  */
 export function listen({ onStart } = {}) {
   return new Promise((resolve, reject) => {
     const rec = new Recognition()
-    rec.lang = 'id-ID'
+    rec.lang = speechLang()
     rec.continuous = false
     rec.interimResults = false
     rec.maxAlternatives = 5
@@ -28,13 +29,13 @@ export function listen({ onStart } = {}) {
   })
 }
 
-/** Says text aloud in Indonesian with the device's own voice, when it has one. */
+/** Says text aloud in the app's language with the device's own voice, when it has one. */
 export function say(text) {
   if (typeof speechSynthesis === 'undefined') return
   speechSynthesis.cancel()
   const line = new SpeechSynthesisUtterance(text)
-  line.lang = 'id-ID'
-  line.voice = speechSynthesis.getVoices().find(v => v.lang.replace('_', '-').startsWith('id')) ?? null
+  line.lang = speechLang()
+  line.voice = speechSynthesis.getVoices().find(v => v.lang.replace('_', '-').startsWith(lang)) ?? null
   line.rate = 0.85
   speechSynthesis.speak(line)
 }
@@ -79,13 +80,18 @@ export function said(heard, accepted, { exact = false, not = [] } = {}) {
 // ── What counts as the right answer ─────────────────────────────────────────
 
 const UNITS = ['nol', 'satu', 'dua', 'tiga', 'empat', 'lima', 'enam', 'tujuh', 'delapan', 'sembilan']
-/** The ways a child (or the recogniser) may say n, 0..20. */
+const EN = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve',
+  'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen', 'twenty']
+// Words recognisers write for a lone English number ("to" for two).
+const EN_SOUNDS = { 2: ['to', 'too'], 4: ['for'], 8: ['ate'] }
+/** The ways a child (or the recogniser) may say n, 0..20; the word comes second. */
 export function numberWords(n) {
+  if (lang === 'en') return [String(n), EN[n], ...(EN_SOUNDS[n] ?? [])]
   const words = n < 10 ? [UNITS[n]] : n === 10 ? ['sepuluh'] : n === 11 ? ['sebelas'] : n < 20 ? [`${UNITS[n - 10]} belas`] : ['dua puluh']
   return [String(n), ...words]
 }
 
-// Indonesian letter names, plus what recognisers tend to write for them.
+// Letter names, plus what recognisers tend to write for them.
 const LETTERS = {
   A: ['a', 'ah'], B: ['be', 'b', 'beh'], C: ['ce', 'c', 'che', 'se'], D: ['de', 'd', 'deh'], E: ['e', 'eh'],
   F: ['ef', 'f', 'ep'], G: ['ge', 'g', 'geh'], H: ['ha', 'h'], I: ['i', 'ih'], J: ['je', 'j', 'jeh'],
@@ -93,5 +99,12 @@ const LETTERS = {
   Q: ['ki', 'q', 'kiu', 'kyu', 'qi'], R: ['er', 'r'], S: ['es', 's'], T: ['te', 't', 'teh'], U: ['u', 'uh'],
   V: ['ve', 'v', 'fe', 'veh'], W: ['we', 'w', 'weh'], X: ['eks', 'x', 'ex', 'iks'], Y: ['ye', 'y', 'yeh'], Z: ['zet', 'z', 'set', 'zed'],
 }
+const LETTERS_EN = {
+  A: ['a', 'ay', 'eh'], B: ['b', 'bee', 'be'], C: ['c', 'see', 'sea'], D: ['d', 'dee'], E: ['e', 'ee'],
+  F: ['f', 'ef', 'eff'], G: ['g', 'gee', 'jee'], H: ['h', 'aitch', 'age'], I: ['i', 'eye', 'aye'], J: ['j', 'jay'],
+  K: ['k', 'kay', 'okay'], L: ['l', 'el', 'elle'], M: ['m', 'em'], N: ['n', 'en'], O: ['o', 'oh', 'owe'], P: ['p', 'pee', 'pea'],
+  Q: ['q', 'queue', 'cue'], R: ['r', 'are', 'ar'], S: ['s', 'es', 'ess'], T: ['t', 'tee', 'tea'], U: ['u', 'you'],
+  V: ['v', 'vee'], W: ['w', 'double you', 'double u'], X: ['x', 'ex'], Y: ['y', 'why'], Z: ['z', 'zee', 'zed'],
+}
 export const ALPHABET = Object.keys(LETTERS)
-export const letterWords = letter => LETTERS[letter]
+export const letterWords = letter => (lang === 'en' ? LETTERS_EN : LETTERS)[letter]

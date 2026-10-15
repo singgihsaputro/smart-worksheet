@@ -6,11 +6,24 @@ laptop, and installable to the home screen. *Belajar sambil bermain.*
 **Live at [ayokmain.my.id](https://ayokmain.my.id)** · free, no ads ·
 open source, and contributions are welcome (see [Contributing](#contributing)).
 
-Nineteen worksheets in five levels. Level 1 is open to everyone; each next
-level needs a signed-in (Google) account with enough stars — stars are kept per
+Nineteen worksheets in five parts. Part 1 is open to everyone; each next part
+needs a signed-in (Google) account with enough stars — stars are kept per
 account and synced, so every child's progress is their own.
 
-| Level (stars needed) | Sheets |
+**Levels.** Every worksheet has its own level map (10 levels; the photo puzzle
+has 3), shown as a winding path like a game's world map. A level always has the
+same content (it is seeded by sheet and level, not random), later levels are
+harder (more animals, bigger pictures, more puzzle pieces, bigger numbers), and
+the next level opens once the one before it has a star. Stars are saved per
+level as `<sheet>-<level>`; stars saved before levels existed count as level 1.
+
+**Bahasa Indonesia / English.** A switcher in the top bar changes every word on
+screen, every name a child can say (each picture has Indonesian and English
+names plus other accepted names), and the voices: speech recognition listens in
+`id-ID` or `en-US`, and the talking cards speak the same language
+(`public/i18n.js`: `tr(id, en)` next to each piece of text).
+
+| Part (stars needed) | Sheets |
 |---|---|
 | 1 · Ayo Mulai (free) | Cari Bayangan (shadows), Makanan Hewan (animal food), Cari di Gambar (find things in a busy picture), Ayo Berhitung (counting) |
 | 2 · Pintar Mencocokkan (5★) | Puzzle Gambar (4/9/16 pieces), Kelompokkan (sort into baskets), Kartu Ingatan (memory) |

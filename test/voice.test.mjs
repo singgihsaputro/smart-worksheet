@@ -1,7 +1,8 @@
 // What counts as the right spoken answer (public/voice.js).
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { ABC, ANIMALS, COLORS, FRUITS, PLANTS, SHAPES, THINGS, VEHICLES } from '../public/data.js'
+import { ABC, ABC_EN, ANIMALS, COLORS, FRUITS, PLANTS, SHAPES, THINGS, VEHICLES, WORDS_EN, seeded, pick } from '../public/data.js'
+import { setLang } from '../public/i18n.js'
 import { letterWords, numberWords, said } from '../public/voice.js'
 
 test('numbers: digits or Indonesian words', () => {
@@ -53,4 +54,35 @@ test('a longer answer that contains this one is a different answer', () => {
   assert.ok(!said(['merah muda'], ['Merah'], { not: ['Merah Muda'] }))
   assert.ok(!said(['persegi panjang'], ['Persegi', 'kotak'], { not: ['Persegi Panjang'] }))
   assert.ok(said(['abu-abu'], ['Abu-abu', 'abu', 'kelabu']))
+})
+
+test('English: every name is accepted as said, names differ, numbers and letters are understood', () => {
+  setLang('en')
+  try {
+    for (const list of [ANIMALS, FRUITS, THINGS, VEHICLES, PLANTS, COLORS, SHAPES]) {
+      assert.equal(new Set(list.map(x => x.en)).size, list.length)
+      for (const x of list) assert.ok(said([x.en.toLowerCase()], [x.en, ...(x.alsoEn ?? [])]), x.en)
+    }
+    for (const a of ANIMALS.filter(a => a.food)) assert.ok(a.foodEn, a.id)
+    for (const f of FRUITS) assert.ok(f.pl, f.id)
+    assert.ok(said(['seven'], numberWords(7), { exact: true }))
+    assert.ok(said(['two'], numberWords(2), { exact: true }) && said(['to'], numberWords(2), { exact: true }))
+    assert.ok(!said(['seventeen'], numberWords(7), { exact: true }))
+    assert.ok(said(['bee'], letterWords('B'), { exact: true }))
+    assert.ok(said(['double you'], letterWords('W'), { exact: true }))
+    assert.ok(!said(['police car'], ['Car'], { not: ['Police Car'] }))
+    assert.deepEqual(ABC_EN.map(([letter]) => letter).join(''), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ')
+    for (const [letter, word] of ABC_EN) assert.equal(word[0], letter)
+    assert.equal(new Set(WORDS_EN.map(w => w.word)).size, WORDS_EN.length)
+  } finally { setLang('id') }
+})
+
+test('levels: the same level always gets the same content', () => {
+  const a = pick(ANIMALS, 4, seeded('shadow#3')).map(x => x.id)
+  const b = pick(ANIMALS, 4, seeded('shadow#3')).map(x => x.id)
+  const c = pick(ANIMALS, 4, seeded('shadow#4')).map(x => x.id)
+  assert.deepEqual(a, b)
+  assert.notDeepEqual(a, c)
+  const r = seeded('x')
+  for (let i = 0; i < 1000; i++) { const v = r(); assert.ok(v >= 0 && v < 1) }
 })

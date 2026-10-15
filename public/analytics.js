@@ -4,7 +4,7 @@ import { SHEETS } from './sheets.js'
 
 const $dash = document.getElementById('dash')
 const when = ms => new Date(ms).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' })
-const sheetName = id => { const s = SHEETS.find(x => x.id === id); return s ? `${s.emoji} ${s.title}` : id }
+const sheetName = id => { const s = SHEETS.find(x => x.id === id); return s ? `${s.emoji} ${s.title[0]}` : id }
 const who = email => email ?? h('span', { class: 'guest' }, 'tamu')
 let view = 'sheets'
 
