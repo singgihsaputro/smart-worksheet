@@ -6,7 +6,7 @@ laptop, and installable to the home screen. *Belajar sambil bermain.*
 **Live at [ayokmain.my.id](https://ayokmain.my.id)** · free, no ads ·
 open source, and contributions are welcome (see [Contributing](#contributing)).
 
-Nineteen worksheets in five parts. Part 1 is open to everyone; each next part
+Twenty-three worksheets in six parts. Part 1 is open to everyone; each next part
 needs a signed-in (Google) account with enough stars — stars are kept per
 account and synced, so every child's progress is their own.
 
@@ -27,9 +27,10 @@ names plus other accepted names), and the voices: speech recognition listens in
 |---|---|
 | 1 · Ayo Mulai (free) | Cari Bayangan (shadows), Makanan Hewan (animal food), Cari di Gambar (find things in a busy picture), Ayo Berhitung (counting) |
 | 2 · Pintar Mencocokkan (5★) | Puzzle Gambar (4/9/16 pieces), Kelompokkan (sort into baskets), Kartu Ingatan (memory) |
-| 3 · Kreasi & Suara (12★) | Tebak Suara (animal sounds), Mewarnai (colouring), Puzzle Fotoku (puzzle from your own photo — it never leaves the device) |
-| 4 · Ayo Bicara (20★) | Tebak Nama Hewan, Tebak Angka, Tebak Nama Buah, Tebak Nama Benda, Tebak Transportasi, Tebak Warna, Tebak Bentuk — say it (speech recognition, Indonesian) |
-| 5 · Huruf & Kata (28★) | Tebak Huruf, Tebak Kata — say the letter / read the word aloud |
+| 3 · Menulis & Menebalkan (8★) | Gambar Hewan, Gambar Buah (follow a dotted outline made from the emoji until the picture appears), Menulis Huruf A–Z, Menulis Hijaiyah (colour in a dotted letter) |
+| 4 · Kreasi & Suara (12★) | Tebak Suara (animal sounds), Mewarnai (colouring), Puzzle Fotoku (puzzle from your own photo — it never leaves the device) |
+| 5 · Ayo Bicara (20★) | Tebak Nama Hewan, Tebak Angka, Tebak Nama Buah, Tebak Nama Benda, Tebak Transportasi, Tebak Warna, Tebak Bentuk — say it (speech recognition, Indonesian) |
+| 6 · Huruf & Kata (28★) | Tebak Huruf, Tebak Kata — say the letter / read the word aloud |
 
 The **Belajar** tab (free, no stars) has picture cards to tap and hear: letters
 A–Z with a word each, numbers 1–20, colours, shapes, animals, plants, fruit, things, vehicles,

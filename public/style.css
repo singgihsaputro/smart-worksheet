@@ -375,3 +375,9 @@ dialog.sheet::backdrop { background: rgba(36, 52, 71, .35); }
 .tray.many { margin-top: 12px; gap: 8px; padding: 10px; }
 .tray.many .piece { width: 74px; height: 74px; }
 .tray.many .piece .emoji { font-size: 44px; }
+
+/* Tracing: a progress bar under the dotted picture */
+.stage.trace { width: min(100%, 440px); background: #fff; }
+.trace-bar { width: min(100%, 440px); height: 12px; margin: 12px auto 4px; border-radius: 99px; background: var(--line); overflow: hidden; }
+.trace-bar i { display: block; width: 0; height: 100%; border-radius: 99px; background: var(--tint, var(--teal)); transition: width .25s; }
+.trace-tools { margin-top: 10px; }

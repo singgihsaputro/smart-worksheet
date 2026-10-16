@@ -4,12 +4,12 @@
 // always has the same content (see the level map in app.js), and harder levels
 // get more pieces, bigger pictures and bigger numbers.
 // Stars come from mistakes (app.js): none → 3, one or two → 2, more → 1.
-import { ANIMALS, COLORS, FRUITS, PLANTS, SHAPES, THINGS, VEHICLES, WORDS, WORDS_EN, pick, shuffle } from './data.js'
+import { ANIMALS, COLORS, FRUITS, HIJAIYAH, PLANTS, SHAPES, THINGS, VEHICLES, WORDS, WORDS_EN, pick, shuffle } from './data.js'
 import { h } from './dom.js'
 import { draggable } from './drag.js'
 import { alsoOf, lang, nm, tr } from './i18n.js'
 import { sfx } from './sfx.js'
-import { ALPHABET, canListen, letterWords, listen, numberWords, said } from './voice.js'
+import { ALPHABET, canListen, letterWords, listen, numberWords, said, say } from './voice.js'
 
 const EMOJI_FONT = '"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif'
 const later = (fn, ms) => setTimeout(fn, ms)
@@ -429,6 +429,199 @@ function sayWord(area, done, { stage, rand }) {
   })), rand)
 }
 
+// ── 18–21. Trace it: letters, hijaiyah, animals and fruit from dotted guides ──
+// The guide is worked out on a 300×300 grid: a letter drawn in a font, or an
+// emoji's silhouette, gives a shape; its edge, thinned to one point per few
+// pixels, is drawn as dots. Letters are traced by colouring inside the letter,
+// pictures by following the dotted outline. After each stroke the child's lines
+// are compared with the shape: enough of it covered finishes the picture, and
+// lines far outside it cost stars.
+const GRID = 300
+const grid = () => { const c = document.createElement('canvas'); c.width = c.height = GRID; return c }
+function maskOf(c) {
+  const d = c.getContext('2d', { willReadFrequently: true }).getImageData(0, 0, GRID, GRID).data
+  const m = new Uint8Array(GRID * GRID)
+  for (let i = 0; i < m.length; i++) m[i] = d[i * 4 + 3] > 110 ? 1 : 0
+  return m
+}
+/** Points along the edge of a mask, one per `step`×`step` cell, so they draw as dots. */
+function edgeDots(m, step = 9) {
+  const seen = new Set(), dots = []
+  for (let y = 1; y < GRID - 1; y++) for (let x = 1; x < GRID - 1; x++) {
+    const i = y * GRID + x
+    if (!m[i] || (m[i - 1] && m[i + 1] && m[i - GRID] && m[i + GRID])) continue
+    const cell = Math.floor(y / step) * 100 + Math.floor(x / step)
+    if (seen.has(cell)) continue
+    seen.add(cell); dots.push([x, y])
+  }
+  return dots
+}
+const discs = (dots, r) => { const c = grid(), g = c.getContext('2d'); for (const [x, y] of dots) { g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); g.fill() } return c }
+
+/** What to cover (`target`) and where lines may go (`allowed`), from a shape-drawing function. */
+function guideOf(draw, outline) {
+  const shape = grid(); draw(shape.getContext('2d'))
+  const m = maskOf(shape), dots = edgeDots(m)
+  if (outline) return { dots, target: maskOf(discs(dots, 8)), allowed: maskOf(discs(dots, 20)) }
+  const wide = discs(dots, 12); wide.getContext('2d').drawImage(shape, 0, 0)
+  return { dots, target: m, allowed: maskOf(wide) }
+}
+
+const BRUSH = 22
+function strokesMask(strokes, width) {
+  const c = grid(), g = c.getContext('2d')
+  g.lineWidth = width; g.lineCap = g.lineJoin = 'round'
+  for (const line of strokes) {
+    g.beginPath(); line.forEach(([x, y], i) => (i ? g.lineTo(x, y) : g.moveTo(x, y)))
+    if (line.length === 1) g.lineTo(line[0][0] + 0.1, line[0][1])
+    g.stroke()
+  }
+  return maskOf(c)
+}
+/** How much of the shape the lines cover (with a little slack), and how much ink went astray. */
+function traceScore(strokes, { target, allowed }) {
+  const wide = strokesMask(strokes, BRUSH + 14), thin = strokesMask(strokes, BRUSH)
+  let t = 0, hit = 0, ink = 0, out = 0
+  for (let i = 0; i < target.length; i++) {
+    if (target[i]) { t++; if (wide[i]) hit++ }
+    if (thin[i]) { ink++; if (!allowed[i]) out++ }
+  }
+  return { cover: t ? hit / t : 0, outside: ink ? out / ink : 0 }
+}
+
+/**
+ * Rounds of { draw(g) → the shape on the 300 grid, reveal(g) → the finished
+ * picture, ask, say }. `outline`: follow the edge (pictures) instead of
+ * colouring inside the letter.
+ */
+function trace(area, done, rounds, { outline = false, font } = {}) {
+  const NEED = outline ? 0.6 : 0.62
+  const INK = ['#27847B', '#E9785E', '#8E6CE0', '#1E88E5', '#F06292']
+  let k = 0, mistakes = 0, ro = null
+  async function round() {
+    ro?.disconnect()
+    const r = rounds[k]
+    if (font) await document.fonts?.load(font, r.text ?? 'A').catch(() => {})
+    const guide = guideOf(r.draw, outline)
+    const strokes = []
+    let finished = false, current = null, dpr = 1
+    const guideEl = h('canvas', { class: 'guide', 'aria-hidden': 'true' })
+    const paint = h('canvas', { class: 'paint', 'aria-label': r.ask })
+    const stageEl = h('div', { class: 'stage trace' }, guideEl, paint)
+    const fill = h('i')
+    const finishBtn = h('button', { class: 'btn ghost', disabled: true, onclick: () => win(true) }, tr('✅ Selesai', '✅ Done'))
+    const color = INK[k % INK.length]
+    function drawGuide(revealed) {
+      const g = guideEl.getContext('2d'), s = guideEl.width / GRID
+      g.setTransform(1, 0, 0, 1, 0, 0); g.fillStyle = '#FFFFFF'; g.fillRect(0, 0, guideEl.width, guideEl.height)
+      g.setTransform(s, 0, 0, s, 0, 0)
+      if (revealed) { r.reveal(g); return }
+      if (!outline) { g.globalAlpha = 0.12; r.draw(g); g.globalAlpha = 1 }
+      g.fillStyle = '#93A1B3'
+      for (const [x, y] of guide.dots) { g.beginPath(); g.arc(x, y, 2.6, 0, Math.PI * 2); g.fill() }
+    }
+    function drawInk() {
+      const g = paint.getContext('2d'), s = paint.width / GRID
+      g.setTransform(1, 0, 0, 1, 0, 0); g.clearRect(0, 0, paint.width, paint.height)
+      g.setTransform(s, 0, 0, s, 0, 0)
+      g.strokeStyle = color; g.lineWidth = BRUSH; g.lineCap = g.lineJoin = 'round'
+      for (const line of strokes) {
+        g.beginPath(); line.forEach(([x, y], i) => (i ? g.lineTo(x, y) : g.moveTo(x, y)))
+        if (line.length === 1) g.lineTo(line[0][0] + 0.1, line[0][1])
+        g.stroke()
+      }
+    }
+    function layout() {
+      dpr = Math.min(2, window.devicePixelRatio || 1)
+      for (const c of [guideEl, paint]) c.width = c.height = Math.round(stageEl.clientWidth * dpr)
+      drawGuide(finished); drawInk()
+    }
+    const pos = e => { const b = paint.getBoundingClientRect(); return [(e.clientX - b.left) * GRID / b.width, (e.clientY - b.top) * GRID / b.height] }
+    paint.addEventListener('pointerdown', e => {
+      if (finished) return
+      e.preventDefault()
+      try { paint.setPointerCapture(e.pointerId) } catch { /* a pointer the browser no longer tracks */ }
+      current = [pos(e)]; strokes.push(current); drawInk()
+    })
+    paint.addEventListener('pointermove', e => { if (!current) return; current.push(pos(e)); drawInk() })
+    for (const ev of ['pointerup', 'pointercancel']) paint.addEventListener(ev, () => { if (!current) return; current = null; check() })
+    function check() {
+      const { cover } = traceScore(strokes, guide)
+      fill.style.width = `${Math.min(100, (cover / NEED) * 100)}%`
+      finishBtn.disabled = cover < 0.35
+      if (cover >= NEED) win(false)
+    }
+    function win(early) {
+      if (finished) return
+      finished = true
+      const { outside } = traceScore(strokes, guide)
+      mistakes += (early ? 1 : 0) + (outside < 0.15 ? 0 : outside < 0.3 ? 1 : 2)
+      fill.style.width = '100%'
+      drawGuide(true); sfx.good(); say(r.say)
+      area.querySelectorAll('.trace-tools button').forEach(b => { b.disabled = true })
+      later(() => (++k < rounds.length ? round() : done({ mistakes })), 1600)
+    }
+    area.replaceChildren(
+      progress(rounds.length, k),
+      h('p', { class: 'question' }, r.ask),
+      stageEl,
+      h('div', { class: 'trace-bar', 'aria-hidden': 'true' }, fill),
+      h('div', { class: 'row trace-tools' },
+        h('button', { class: 'btn ghost', onclick: () => { strokes.length = 0; drawInk(); check() } }, tr('🗑️ Hapus', '🗑️ Clear')),
+        finishBtn))
+    layout()
+    ro = new ResizeObserver(() => { if (Math.round(stageEl.clientWidth * dpr) !== guideEl.width) layout() })
+    ro.observe(stageEl)
+  }
+  round()
+  return () => ro?.disconnect()
+}
+
+const LETTER_FONT = '700 250px Fredoka, Nunito, sans-serif'
+const ARABIC_FONT = '700 200px "Noto Naskh Arabic", "Geeza Pro", serif'
+/** A letter scaled to fill the middle of the grid, whatever its font's proportions. */
+function glyph(text, font, color) {
+  return g => {
+    g.font = font; g.textAlign = 'left'; g.textBaseline = 'alphabetic'; g.fillStyle = color ?? '#000'
+    const m = g.measureText(text)
+    const w = m.actualBoundingBoxLeft + m.actualBoundingBoxRight, tall = m.actualBoundingBoxAscent + m.actualBoundingBoxDescent
+    const scale = 210 / Math.max(w, tall, 1)
+    g.save(); g.translate(GRID / 2, GRID / 2); g.scale(scale, scale)
+    g.fillText(text, m.actualBoundingBoxLeft - w / 2, m.actualBoundingBoxAscent - tall / 2)
+    g.restore()
+  }
+}
+const emojiAt = (emoji, alpha = 1) => g => {
+  g.globalAlpha = alpha; g.font = `230px ${EMOJI_FONT}`; g.textAlign = 'center'; g.textBaseline = 'middle'
+  g.fillText(emoji, GRID / 2, GRID * 0.54); g.globalAlpha = 1
+}
+
+function traceLetters(area, done, { stage }) {
+  const letters = ALPHABET.slice((stage - 1) * 3, stage * 3)
+  return trace(area, done, letters.map(letter => ({
+    text: letter, draw: glyph(letter, LETTER_FONT), reveal: glyph(letter, LETTER_FONT, '#27847B'),
+    ask: tr(`Tebalkan huruf ${letter}`, `Trace the letter ${letter}`), say: letter,
+  })), { font: LETTER_FONT })
+}
+
+function traceHijaiyah(area, done, { stage }) {
+  return trace(area, done, HIJAIYAH.slice((stage - 1) * 3, stage * 3).map(([letter, id, en]) => ({
+    text: letter, draw: glyph(letter, ARABIC_FONT), reveal: glyph(letter, ARABIC_FONT, '#27847B'),
+    ask: tr(`Tebalkan huruf ${id}`, `Trace the letter ${en}`), say: tr(id, en),
+  })), { font: ARABIC_FONT })
+}
+
+// One picture per level, from simple outlines to busier ones.
+const TRACE_ANIMALS = ['fish', 'turtle', 'duck', 'bird', 'rabbit', 'elephant', 'crab', 'butterfly', 'giraffe', 'owl']
+const TRACE_FRUITS = ['apple', 'pear', 'cherry', 'banana', 'orange', 'lemon', 'strawberry', 'grapes', 'watermelon', 'pineapple']
+const tracePicture = (list, ids) => (area, done, { stage }) => {
+  const x = list.find(item => item.id === at(stage, ids))
+  return trace(area, done, [{
+    draw: emojiAt(x.emoji), reveal: emojiAt(x.emoji),
+    ask: tr(`Ikuti garis titik-titik: ${x.name}`, `Follow the dotted line: ${x.en}`), say: nm(x),
+  }], { outline: true })
+}
+
 const spaced = text => ` ${text.toLowerCase().replace(/-/g, ' ')} `
 const BRIGHT = ['#E9785E', '#27847B', '#F6C344', '#7CCBDD', '#8E6CE0', '#F06292']
 
@@ -460,6 +653,7 @@ const sayName = (list, draw = (x, rand) => h('span', { class: 'emoji prompt-emoj
 export const GROUPS = [
   { id: 'start', title: ['Ayo Mulai', "Let's Start"], emoji: '🐣', need: 0 },
   { id: 'match', title: ['Pintar Mencocokkan', 'Match It'], emoji: '🧩', need: 5 },
+  { id: 'trace', title: ['Menulis & Menebalkan', 'Write & Trace'], emoji: '✍️', need: 8 },
   { id: 'create', title: ['Kreasi & Suara', 'Create & Listen'], emoji: '🎨', need: 12 },
   { id: 'talk', title: ['Ayo Bicara', "Let's Talk"], emoji: '🎤', need: 20 },
   { id: 'read', title: ['Huruf & Kata', 'Letters & Words'], emoji: '🔤', need: 28 },
@@ -481,6 +675,14 @@ export const SHEETS = [
     title: ['Kelompokkan', 'Sort It'], blurb: ['Hewan, buah, atau benda?', 'Animal, fruit or thing?'], how: ['Geser setiap gambar ke keranjang yang benar.', 'Drag each picture into the right basket.'] },
   { id: 'memory', group: 'match', emoji: '🃏', color: 'sky', start: memory,
     title: ['Kartu Ingatan', 'Memory Cards'], blurb: ['Temukan pasangan kartu', 'Find the matching pairs'], how: ['Buka dua kartu. Cari yang gambarnya sama!', 'Open two cards. Find the ones that match!'] },
+  { id: 'trace-animal', group: 'trace', emoji: '🐢', color: 'teal', start: tracePicture(ANIMALS, TRACE_ANIMALS),
+    title: ['Gambar Hewan', 'Draw Animals'], blurb: ['Ikuti garis titik-titik hewan', 'Follow the dotted animal'], how: ['Ikuti garis titik-titik dengan jarimu sampai hewannya muncul.', 'Follow the dotted line with your finger until the animal appears.'] },
+  { id: 'trace-fruit', group: 'trace', emoji: '🍐', color: 'coral', start: tracePicture(FRUITS, TRACE_FRUITS),
+    title: ['Gambar Buah', 'Draw Fruit'], blurb: ['Ikuti garis titik-titik buah', 'Follow the dotted fruit'], how: ['Ikuti garis titik-titik dengan jarimu sampai buahnya muncul.', 'Follow the dotted line with your finger until the fruit appears.'] },
+  { id: 'trace-letter', group: 'trace', emoji: '✏️', color: 'sun', start: traceLetters, stages: 9,
+    title: ['Menulis Huruf', 'Write Letters'], blurb: ['Tebalkan huruf A sampai Z', 'Trace the letters A to Z'], how: ['Warnai huruf yang bertitik-titik dengan jarimu sampai penuh.', 'Color in the dotted letter with your finger.'] },
+  { id: 'trace-hijaiyah', group: 'trace', emoji: 'ب', color: 'sky', start: traceHijaiyah,
+    title: ['Menulis Hijaiyah', 'Write Hijaiyah'], blurb: ['Tebalkan huruf hijaiyah', 'Trace the hijaiyah letters'], how: ['Warnai huruf hijaiyah yang bertitik-titik dengan jarimu sampai penuh.', 'Color in the dotted hijaiyah letter with your finger.'] },
   { id: 'sound', group: 'create', emoji: '🔊', color: 'sky', start: sounds,
     title: ['Tebak Suara', 'Guess the Sound'], blurb: ['Hewan apa yang bersuara?', 'Which animal makes this sound?'], how: ['Dengarkan suaranya, lalu ketuk hewan yang benar.', 'Listen, then tap the right animal.'] },
   { id: 'draw', group: 'create', emoji: '🖍️', color: 'coral', start: drawing,

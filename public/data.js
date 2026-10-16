@@ -159,6 +159,17 @@ export const ABC_EN = [
   ['U', 'Umbrella', '☂️'], ['V', 'Violin', '🎻'], ['W', 'Whale', '🐳'], ['X', 'Xylophone', '🎶'], ['Y', 'Yo-yo', '🪀'], ['Z', 'Zebra', '🦓'],
 ]
 
+// The hijaiyah letters in the order Indonesian children learn them (as in Ayok Ngaji):
+// [letter, Indonesian name, English name].
+export const HIJAIYAH = [
+  ['ا', 'Alif', 'Alif'], ['ب', 'Ba', 'Ba'], ['ت', 'Ta', 'Ta'], ['ث', 'Tsa', 'Tha'], ['ج', 'Jim', 'Jim'],
+  ['ح', 'Ha', 'Ha'], ['خ', 'Kho', 'Kha'], ['د', 'Dal', 'Dal'], ['ذ', 'Dzal', 'Dhal'], ['ر', 'Ro', 'Ra'],
+  ['ز', 'Zai', 'Zay'], ['س', 'Sin', 'Sin'], ['ش', 'Syin', 'Shin'], ['ص', 'Shod', 'Sad'], ['ض', 'Dhod', 'Dad'],
+  ['ط', 'Tho', 'Ta'], ['ظ', 'Dzho', 'Za'], ['ع', "'Ain", "'Ayn"], ['غ', 'Ghoin', 'Ghayn'], ['ف', 'Fa', 'Fa'],
+  ['ق', 'Qof', 'Qaf'], ['ك', 'Kaf', 'Kaf'], ['ل', 'Lam', 'Lam'], ['م', 'Mim', 'Mim'], ['ن', 'Nun', 'Nun'],
+  ['و', 'Wau', 'Waw'], ['ه', 'Ha', 'Ha'], ['لا', 'Lam Alif', 'Lam Alif'], ['ء', 'Hamzah', 'Hamza'], ['ي', 'Ya', 'Ya'],
+]
+
 // Short, everyday words for "Tebak Kata" / "Read the Word": read it aloud, and the picture appears.
 export const WORDS = [
   { word: 'BOLA', emoji: '⚽' }, { word: 'APEL', emoji: '🍎' }, { word: 'IKAN', emoji: '🐟' }, { word: 'BUKU', emoji: '📚' },
